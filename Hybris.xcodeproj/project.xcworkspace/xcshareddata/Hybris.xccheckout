@@ -7,34 +7,34 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>2682543F-5F43-4C5F-B63D-502C71B48153</string>
 	<key>IDESourceControlProjectName</key>
-	<string>Hybris</string>
+	<string>project</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>3FB20B97-CA5E-46B2-BAA0-193A4C6CBBDB</key>
-		<string>https://stash.hybris.com/scm/mobile/ios.git</string>
+		<key>BB98A4D9EDBB7A2BFBD688BC7BF75BF444DB93F9</key>
+		<string>https://github.com/debidutt/Amroc.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Hybris.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>3FB20B97-CA5E-46B2-BAA0-193A4C6CBBDB</key>
+		<key>BB98A4D9EDBB7A2BFBD688BC7BF75BF444DB93F9</key>
 		<string>../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://stash.hybris.com/scm/mobile/ios.git</string>
+	<string>https://github.com/debidutt/Amroc.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>3FB20B97-CA5E-46B2-BAA0-193A4C6CBBDB</string>
+	<string>BB98A4D9EDBB7A2BFBD688BC7BF75BF444DB93F9</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>3FB20B97-CA5E-46B2-BAA0-193A4C6CBBDB</string>
+			<string>BB98A4D9EDBB7A2BFBD688BC7BF75BF444DB93F9</string>
 			<key>IDESourceControlWCCName</key>
-			<string>ios</string>
+			<string>Amroc</string>
 		</dict>
 	</array>
 </dict>
