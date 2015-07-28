@@ -216,6 +216,8 @@
 -(IBAction)mailToCromaTeam:(id)sender{
     
     MFMailComposeViewController *mailComposer;
+    
+    // will not show mfmailcomposerviewcontroller if mail is not configured 
    
     if ([MFMailComposeViewController canSendMail]){
     mailComposer  = [[MFMailComposeViewController alloc] init];
