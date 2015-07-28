@@ -1,3 +1,4 @@
+
 //
 // HYWebService.m
 // [y] hybris Platform
@@ -13,6 +14,7 @@
 
 #import "HYWebServiceDataProvider.h"
 #import "HYWebServiceAuthProvider.h"
+#import "HYBanner.h"
 
 
 // Private Interface
@@ -75,8 +77,30 @@
     if (!_userDefaults) {
         _userDefaults = [NSUserDefaults standardUserDefaults];
     }
-
+    
     return _userDefaults;
+}
+
+-(NSString * )imgURL:(NSString *)imgString{
+    
+    
+    
+    
+    NSString *imgURl = [[NSString stringWithFormat:@"%@",self.imageURL] stringByAppendingFormat:@"%@",imgString];
+    
+    return imgURl;
+    
+    
+}
+
+-(NSString * )UrlLink:(NSString *)urlString{
+    
+    
+    NSString *URLString = [[NSString stringWithFormat:@"%@",self.imageURL] stringByAppendingFormat:@"%@",urlString];
+    
+    return URLString;
+    
+    
 }
 
 
@@ -87,7 +111,7 @@ PureSingleton(HYWebService);
 - (id)init {
     if (self = [super init]) {
     }
-
+    
     return self;
 }
 
@@ -97,15 +121,15 @@ PureSingleton(HYWebService);
 /// This only returns HYProduct objects in its block
 - (void)fetchItemsForQuery:(HYQuery *)query resetQuery:(BOOL)reset withCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     logInfo2(@"\n");
-
+    
     if (reset) {
         logDebug(@"Resetting query...");
         [query resetObject];
     }
-
+    
     NSString *sortMethod = query.selectedSort.internalName ? query.selectedSort.internalName : @"";
     NSString *searchQuery = [self generateQueryTagFromQuery:query];
-
+    
     if (searchQuery) {
         searchQuery = [NSString stringWithFormat:@"%@:%@:%@", query.queryString, sortMethod, searchQuery];
     }
@@ -117,73 +141,74 @@ PureSingleton(HYWebService);
     if ([query.queryString isEmpty]) {
         searchQuery = [NSString stringWithFormat:@"%@&clear=true", searchQuery];
     }
-
+    
     NSString *url = [self urlWithSearchString:searchQuery pageSize:[query.pageSize intValue] currentPage:[query.currentPage intValue]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:url completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            NSLog(@"I am inside completion Block");
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&jsonError];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&jsonError];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
+                
+                dispatch_async (dispatch_get_main_queue (), ^{
+                    
+                    NSArray *facets = [dict objectForKey:@"facets"];
+                    NSArray *products = [dict objectForKey:@"products"];
+                    NSDictionary *pagination = [dict objectForKey:@"pagination"];
+                    NSArray *sortMethods = [dict objectForKey:@"sorts"];
+                    NSDictionary *spellingSuggestion = [dict objectForKey:@"spellingSuggestion"];
+                    
+                    __block NSMutableDictionary *objects = [[NSMutableDictionary alloc] init];
+                    
+                    logDebug (@"*** Populating model...");
+                    
+                    [self populateQuery:query withInfo:pagination];
+                    [self populateSortMethodsForQuery:query withArray:sortMethods];
+                    [self populateFacetsForQuery:query withArray:facets];
+                    
+                    [objects setObject:[self populateProductsForQuery:query withArray:products] forKey:@"products"];
+                    
+                    if (spellingSuggestion) {
+                        [objects setObject:spellingSuggestion forKey:@"spellingSuggestion"];
+                        [HYDidYouMean objectWithInfo:[NSDictionary dictionaryWithObjectsAndKeys:[spellingSuggestion objectForKey:@"suggestion"], @"suggestion",
+                                                      query, @"query", nil]];
                     }
-
-                    dispatch_async (dispatch_get_main_queue (), ^{
-
-                        NSArray *facets = [dict objectForKey:@"facets"];
-                        NSArray *products = [dict objectForKey:@"products"];
-                        NSDictionary *pagination = [dict objectForKey:@"pagination"];
-                        NSArray *sortMethods = [dict objectForKey:@"sorts"];
-                        NSDictionary *spellingSuggestion = [dict objectForKey:@"spellingSuggestion"];
-
-                        __block NSMutableDictionary *objects = [[NSMutableDictionary alloc] init];
-
-                        logDebug (@"*** Populating model...");
-
-                        [self populateQuery:query withInfo:pagination];
-                        [self populateSortMethodsForQuery:query withArray:sortMethods];
-                        [self populateFacetsForQuery:query withArray:facets];
-
-                        [objects setObject:[self populateProductsForQuery:query withArray:products] forKey:@"products"];
-
-                        if (spellingSuggestion) {
-                            [objects setObject:spellingSuggestion forKey:@"spellingSuggestion"];
-                            [HYDidYouMean objectWithInfo:[NSDictionary dictionaryWithObjectsAndKeys:[spellingSuggestion objectForKey:@"suggestion"], @"suggestion",
-                                    query, @"query", nil]];
-                        }
-
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
-                                });
-                        }
-                    });
-                }
-                else {
+                    
                     if (completionBlock) {
-                        completionBlock (nil, error);
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
+                        });
                     }
+                });
+            }
+            else {
+                if (completionBlock) {
+                    completionBlock (nil, error);
                 }
             }
-        }];
+        }
+    }];
 }
 
 - (void)fetchFurtherItems:(HYQuery *)query withCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSNumber *i = [NSNumber numberWithInt:[query.currentPage intValue] + 1];
-
+    
     if ([i intValue] < [query.totalPages intValue]) {
         [query setCurrentPage:i];
         [self fetchItemsForQuery:query resetQuery:NO withCompletionBlock:completionBlock];
@@ -195,92 +220,92 @@ PureSingleton(HYWebService);
 
 - (NSArray *)populateFacetsForQuery:(HYQuery *)query withArray:(NSArray *)facets {
     NSArray *ignoredFacets = [[HYAppDelegate sharedDelegate].configDictionary objectForKey:@"Ignored Facets"];
-
+    
     if (ignoredFacets == nil) {
         ignoredFacets = [NSArray array];
     }
-
+    
     NSMutableArray *objects = [[NSMutableArray alloc] init];
-
+    
     // Remove all facets not being used
     NSMutableSet *remove = [[NSMutableSet alloc] init];
-
+    
     for (id fv in query.items) {
         if ([fv isKindOfClass:[HYFacetValue class]] || [fv isKindOfClass:[HYFacet class]]) {
             [remove addObject:fv];
         }
     }
-
+    
     // Add selected ones
     NSMutableSet *keepAlive = [[NSMutableSet alloc] init];
-
+    
     for (HYFacetValue *fv in query.selectedFacetValues) {
         [keepAlive addObject:fv];
         [keepAlive addObject:fv.facet];
     }
-
+    
     [query.items removeObjectsInArray:[remove allObjects]];
     [query.items addObjectsFromArray:[keepAlive allObjects]];
-
+    
     for (NSDictionary *d1 in facets) {
         NSString *facetInternalName;
         NSString *facetvalue;
         NSMutableDictionary *facetInfo = [[NSMutableDictionary alloc] init];
         NSArray *facetValues = [d1 objectForKey:@"values"];
         NSMutableArray *facetValuesArray = [[NSMutableArray alloc] initWithCapacity:facetValues.count];
-
+        
         BOOL hasData = NO;
-
+        
         for (NSDictionary *d2 in facetValues) {
             if (![[d2 objectForKey:@"selected"] boolValue]) {
                 hasData = YES;
                 NSMutableDictionary *facetValuesDictionary = [[NSMutableDictionary alloc] init];
-                NSString *facetQuery = [d2 objectForKey:@"query"];                
-                NSArray *tempValues = [facetQuery componentsSeparatedByString:@":"];                
+                NSString *facetQuery = [d2 objectForKey:@"query"];
+                NSArray *tempValues = [facetQuery componentsSeparatedByString:@":"];
                 facetInternalName = [tempValues objectAtIndex:tempValues.count-2];
                 facetvalue = [tempValues lastObject];
-
+                
                 [facetValuesDictionary setObject:[d2 objectForKey:@"name"] forKey:@"name"]; // e.g. Black
                 [facetValuesDictionary setObject:facetvalue forKey:@"value"]; // e.g. black
                 [facetValuesDictionary setObject:[d2 valueForKey:@"count"] forKey:@"count"]; // 2
                 [facetValuesDictionary setObject:[d2 valueForKey:@"selected"] forKey:@"selected"];
-
+                
                 [facetValuesArray addObject:facetValuesDictionary];
             }
         }
-
+        
         if (hasData) {
             [facetInfo setObject:[d1 objectForKey:@"name"] forKey:@"name"]; // e.g Color
             [facetInfo setObject:facetInternalName forKey:@"internalName"]; // e.g Colour of product, 1766
             [facetInfo setObject:facetValuesArray forKey:@"facetValues"]; // eg. Black = black
             [facetInfo setObject:[d1 objectForKey:@"multiSelect"] forKey:@"multiSelect"];
             [facetInfo setObject:query forKey:@"query"];
-
+            
             // Ignore ignored facets (set in settings.plist)
             if (![ignoredFacets containsObject:[facetInfo objectForKey:@"name"]]) {
                 [objects addObject:[HYFacet objectWithInfo:facetInfo]];
             }
         }
     }
-
+    
     return objects;
 }
 
 
 - (NSArray *)populateProductsForQuery:(HYQuery *)query withArray:(NSArray *)products {
     NSMutableArray *objects = [[NSMutableArray alloc] init];
-
+    
     NSInteger i = [query.pageSize intValue] * [query.currentPage intValue];
-
+    
     for (NSDictionary *product in products) {
         HYProduct *p = [HYProduct objectWithInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-                product, @"product",
-                query, @"query",
-                nil]];
+                                                  product, @"product",
+                                                  query, @"query",
+                                                  nil]];
         p.sortRank = i++;
         [objects addObject:p];
     }
-
+    
     return objects;
 }
 
@@ -289,16 +314,16 @@ PureSingleton(HYWebService);
     @synchronized(query) {
         //remove all previous sort elements before adding new ones
         NSMutableArray *keepItems = [NSMutableArray array];
-
+        
         NSArray *items = [NSArray arrayWithArray:query.items];
         for (HYItem *item in items) {
             if (![item isKindOfClass:[HYSort class]]) {
                 [keepItems addObject:item];
             }
         }
-
+        
         query.items = [NSMutableArray arrayWithArray:keepItems];
-
+        
         for (NSDictionary *sortMethod in sortMethods) {
             NSMutableDictionary *mutableSort = [NSMutableDictionary dictionaryWithDictionary:sortMethod];
             [mutableSort setObject:query forKey:@"query"];
@@ -327,10 +352,10 @@ PureSingleton(HYWebService);
 - (NSString *)generateQueryTagFromDictionary:(NSDictionary *)tagDictionary {
     NSArray *facetKeys = [tagDictionary allKeys];
     NSString *generatedTag;
-
+    
     for (NSString *key in facetKeys) {
         NSArray *facetValuesArray = [tagDictionary objectForKey:key];
-
+        
         for (NSDictionary *facetValue in facetValuesArray) {
             if (generatedTag.length) {
                 generatedTag = [generatedTag stringByAppendingFormat:@":%@:%@", key, [facetValue valueForKey:@"value"]];
@@ -340,7 +365,7 @@ PureSingleton(HYWebService);
             }
         }
     }
-
+    
     return generatedTag;
 }
 
@@ -348,7 +373,7 @@ PureSingleton(HYWebService);
 - (NSString *)generateQueryTagFromQuery:(HYQuery *)query {
     NSString *facetTag;
     NSString *categoryTag;
-
+    
     for (HYFacetValue *fv in query.selectedFacetValues) {
         if (facetTag.length) {
             facetTag = [facetTag stringByAppendingFormat:@":%@:%@", fv.facet.internalName, fv.value];
@@ -357,21 +382,21 @@ PureSingleton(HYWebService);
             facetTag = [NSString stringWithFormat:@"%@:%@", fv.facet.internalName, fv.value];
         }
     }
-
+    
     categoryTag = query.selectedCategory.searchTag;
-
+    
     if (facetTag && categoryTag) {
         return [NSString stringWithFormat:@"%@:%@", facetTag, categoryTag];
     }
-
+    
     if (facetTag) {
         return facetTag;
     }
-
+    
     if (categoryTag) {
         return categoryTag;
     }
-
+    
     return nil;
 }
 
@@ -379,183 +404,194 @@ PureSingleton(HYWebService);
 - (void)clientCredentialsTokenWithCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *postBody = [NSString stringWithFormat:@"client_id=%@&client_secret=%@&grant_type=client_credentials", HYAuthClientID, HYAuthClientSecret];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[HYWebServiceAuthProvider tokenURL] httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *
-            jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                                                   jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"access_token"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"access_token"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (NSString *)urlWithSearchString:(NSString *)searchString pageSize:(int)pageSize currentPage:(int)currentPage {
     NSString *url = [NSString stringWithFormat:@"%@%@products?query=%@&pageSize=%i&currentPage=%i",
-        self.baseURL,
-        self.siteURLSuffix,
-        searchString,
-        pageSize,
-        currentPage];
-
+                     self.baseURL,
+                     self.siteURLSuffix,
+                     searchString,
+                     pageSize,
+                     currentPage];
+    
     return url;
 }
 
 
 - (NSString *)urlForProducts {
     NSString *url = [NSString stringWithFormat:@"%@%@products/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
+}
+
+
+-(NSString *)urlForBanner {
+    NSString * url = [NSString stringWithFormat:@"%@%@category/banner/",
+                      self.baseURL,
+                      self.siteURLSuffix];
+    
+    return url;
+    
+    
 }
 
 
 - (NSString *)urlWithProductCode:(NSString *)productCode {
     NSString *url = [NSString stringWithFormat:@"%@%@products/%@",
-        self.baseURL,
-        self.siteURLSuffix,
-        productCode];
-
+                     self.baseURL,
+                     self.siteURLSuffix,
+                     productCode];
+    
     return url;
 }
 
 
 - (NSString *)urlForCart {
     NSString *url = [NSString stringWithFormat:@"%@%@cart/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCartEntry {
     NSString *url = [NSString stringWithFormat:@"%@%@cart/entry",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCartDeliveryModes {
     NSString *url = [NSString stringWithFormat:@"%@%@cart/deliverymodes",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCartDeliveryAddress {
     NSString *url = [NSString stringWithFormat:@"%@%@cart/address/delivery",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForOrders {
     NSString *url = [NSString stringWithFormat:@"%@%@orders/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCustomer {
     NSString *url = [NSString stringWithFormat:@"%@%@customers/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForLanguages {
     NSString *url = [NSString stringWithFormat:@"%@%@languages/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCurrencies {
     NSString *url = [NSString stringWithFormat:@"%@%@currencies/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForDeliveryCountries {
     NSString *url = [NSString stringWithFormat:@"%@%@deliverycountries/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForCardTypes {
     NSString *url = [NSString stringWithFormat:@"%@%@cardtypes/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
 
 - (NSString *)urlForTitles {
     NSString *url = [NSString stringWithFormat:@"%@%@titles/",
-        self.baseURL,
-        self.siteURLSuffix];
-
+                     self.baseURL,
+                     self.siteURLSuffix];
+    
     return url;
 }
 
@@ -580,172 +616,172 @@ PureSingleton(HYWebService);
 
 - (void)productWithCode:(NSString *)productCode options:(NSArray *)options completionBlock:(NSArrayNSErrorBlock)completionBlock {
     NSString *optionsString = [options componentsJoinedByString:@","];
-
+    
     if (optionsString.length) {
         optionsString = [NSString stringWithFormat:@"?options=%@", optionsString];
     }
     else {
         optionsString = @"";
     }
-
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[NSString stringWithFormat:@"%@%@", [self urlWithProductCode:productCode],
-            optionsString] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
+                                                         optionsString] completionBlock:^(NSData *jsonData, NSError *error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
+                }
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                                                                error:&jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
                     }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error:&jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    if ([dict objectForKey:@"code"]) {
-                        [dict setObject:productCode forKey:@"code"];
-
-                        __block NSMutableArray *objects = [[NSMutableArray alloc] init];
-
-                        [objects addObject:[HYProduct objectWithInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-                                    dict, @"product",
-                                    nil]
-                            ]];
-
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
-                                });
-                        }
-                    }
-                    else {
-                        // No product found
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-
-                        return;
+                    
+                    return;
+                }
+                
+                if ([dict objectForKey:@"code"]) {
+                    [dict setObject:productCode forKey:@"code"];
+                    
+                    __block NSMutableArray *objects = [[NSMutableArray alloc] init];
+                    
+                    [objects addObject:[HYProduct objectWithInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                  dict, @"product",
+                                                                  nil]
+                                        ]];
+                    
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
+                        });
                     }
                 }
                 else {
+                    // No product found
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
+                    
+                    return;
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 #pragma mark - Cart methods
 
 - (void)cartWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForCart] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:
+                                                               NSJSONReadingMutableContainers error:&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:
-                            NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    __block NSMutableArray *objects = [[NSMutableArray alloc] init];
-                    [objects addObject:[Cart cartWithInfo:dict]];
-
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
-                            });
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                    }
+                
+                __block NSMutableArray *objects = [[NSMutableArray alloc] init];
+                [objects addObject:[Cart cartWithInfo:dict]];
+                
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (objects, error);
+                    });
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)addProductToCartWithCode:(NSString *)code quantity:(NSInteger)quantity completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *postBody = [NSString stringWithFormat:@"code=%@&qty=%i", code, quantity];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForCartEntry] httpMethod:@"POST" httpBody:(NSData *)postData completionBlock:^(NSData *
-            jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                                                jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
+                
+                BOOL success = [dict objectForKey:@"statusCode"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                        });
                     }
-
-                    BOOL success = [dict objectForKey:@"statusCode"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)addProductToCartWithCode:(NSString *)code completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
@@ -755,208 +791,208 @@ PureSingleton(HYWebService);
 
 - (void)updateProductInCartAtEntry:(NSInteger)entry quantity:(NSInteger)quantity completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[NSString stringWithFormat:@"%@/%i?qty=%i", [self urlForCartEntry], entry,
-            quantity] httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                         quantity] httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
+                
+                BOOL success = [[dict objectForKey:@"statusCode"] isEqualToString:@"success"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
-
-                    BOOL success = [[dict objectForKey:@"statusCode"] isEqualToString:@"success"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)deleteProductInCartAtEntry:(NSInteger)entry completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[NSString stringWithFormat:@"%@/%i", [self urlForCartEntry],
-            entry] httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [[dict objectForKey:@"statusCode"] isEqualToString:@"success"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
+                                                         entry] httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
                 }
-                else {
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [[dict objectForKey:@"statusCode"] isEqualToString:@"success"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                        });
+                    }
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)setCartDeliveryAddressWithID:(NSString *)addressID completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:[NSString stringWithFormat:@"%@/%@", [self urlForCartDeliveryAddress], addressID]
-        httpMethod:@"PUT"
-        httpBody:nil
-        completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-                    }
-
-                    BOOL success = ([dict objectForKey:@"error"] || [dict objectForKey:@"class"]) ? NO:YES;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
+                                               httpMethod:@"PUT"
+                                                 httpBody:nil
+                                          completionBlock:^(NSData *jsonData, NSError *error) {
+                                              if (jsonData) {
+                                                  if (completionBlock) {
+                                                      if (error) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                          });
+                                                          return;
+                                                      }
+                                                      
+                                                      NSError *jsonError;
+                                                      
+                                                      NSMutableDictionary *dict =
+                                                      [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                                                                     error
+                                                                                                                                           :&
+                                                                                                     jsonError]];
+                                                      
+                                                      if (jsonError) {
+                                                          if (completionBlock) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                                                              });
+                                                          }
+                                                      }
+                                                      
+                                                      BOOL success = ([dict objectForKey:@"error"] || [dict objectForKey:@"class"]) ? NO:YES;
+                                                      
+                                                      if (completionBlock) {
+                                                          if (success) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                                                              });
+                                                          }
+                                                          else {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                                                              });
+                                                          }
+                                                      }
+                                                  }
+                                                  else {
+                                                      if (completionBlock) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                          });
+                                                      }
+                                                  }
+                                              }
+                                          }];
 }
 
 - (void)deleteCartDeliveryAddressWithCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:[self urlForCartDeliveryAddress]
-        httpMethod:@"DELETE"
-        httpBody:nil
-        completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"error"] ? NO:YES;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
+                                               httpMethod:@"DELETE"
+                                                 httpBody:nil
+                                          completionBlock:^(NSData *jsonData, NSError *error) {
+                                              if (jsonData) {
+                                                  if (completionBlock) {
+                                                      if (error) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                          });
+                                                          return;
+                                                      }
+                                                      
+                                                      NSError *jsonError;
+                                                      
+                                                      NSMutableDictionary *dict =
+                                                      [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                                                                     error
+                                                                                                                                           :&
+                                                                                                     jsonError]];
+                                                      
+                                                      if (jsonError) {
+                                                          if (completionBlock) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                                                              });
+                                                          }
+                                                          
+                                                          return;
+                                                      }
+                                                      
+                                                      BOOL success = [dict objectForKey:@"error"] ? NO:YES;
+                                                      
+                                                      if (completionBlock) {
+                                                          if (success) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                                                              });
+                                                          }
+                                                          else {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                                                              });
+                                                          }
+                                                      }
+                                                  }
+                                                  else {
+                                                      if (completionBlock) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                          });
+                                                      }
+                                                  }
+                                              }
+                                          }];
 }
 
 - (void)createCustomerPaymentInfoWithAccountHolderName:(NSString *)accountHolderName
@@ -977,408 +1013,408 @@ PureSingleton(HYWebService);
                                        completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCart] stringByAppendingString:@"paymentinfo"];
     NSString *postBody =
-        [[NSString stringWithFormat:
-            @"accountHolderName=%@&cardNumber=%@&cardType=%@&expiryMonth=%@&expiryYear=%@&saved=%@&defaultPaymentInfo=%@&billingAddress.titleCode=%@&billingAddress.firstName=%@&billingAddress.lastName=%@&billingAddress.line1=%@&billingAddress.line2=%@&billingAddress.postalCode=%@&billingAddress.town=%@&billingAddress.country.isocode=%@",
-            accountHolderName,
-            cardNumber,
-            cardType,
-            expiryMonth,
-            expiryYear,
-            shouldSave ? @"true":@"false",
-            isDefaultPaymentInfo ? @"true":@"false",
-            titleCode,
-            firstName,
-            lastName,
-            addressLine1,
-            addressLine2,
-            postCode,
-            town,
-            countryCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [[NSString stringWithFormat:
+      @"accountHolderName=%@&cardNumber=%@&cardType=%@&expiryMonth=%@&expiryYear=%@&saved=%@&defaultPaymentInfo=%@&billingAddress.titleCode=%@&billingAddress.firstName=%@&billingAddress.lastName=%@&billingAddress.line1=%@&billingAddress.line2=%@&billingAddress.postalCode=%@&billingAddress.town=%@&billingAddress.country.isocode=%@",
+      accountHolderName,
+      cardNumber,
+      cardType,
+      expiryMonth,
+      expiryYear,
+      shouldSave ? @"true":@"false",
+      isDefaultPaymentInfo ? @"true":@"false",
+      titleCode,
+      firstName,
+      lastName,
+      addressLine1,
+      addressLine2,
+      postCode,
+      town,
+      countryCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL
-        httpMethod:@"POST"
-        httpBody:postData
-        completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"paymentInfo"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
+                                               httpMethod:@"POST"
+                                                 httpBody:postData
+                                          completionBlock:^(NSData *jsonData, NSError *error) {
+                                              if (jsonData) {
+                                                  if (completionBlock) {
+                                                      if (error) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                          });
+                                                          return;
+                                                      }
+                                                      
+                                                      NSError *jsonError;
+                                                      
+                                                      NSDictionary *dict =
+                                                      [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                                                              jsonError]];
+                                                      
+                                                      if (jsonError) {
+                                                          if (completionBlock) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                                                              });
+                                                          }
+                                                          
+                                                          return;
+                                                      }
+                                                      
+                                                      BOOL success = [dict objectForKey:@"paymentInfo"] ? YES:NO;
+                                                      
+                                                      if (completionBlock) {
+                                                          if (success) {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                                                              });
+                                                          }
+                                                          else {
+                                                              dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                                                              });
+                                                          }
+                                                      }
+                                                  }
+                                                  else {
+                                                      if (completionBlock) {
+                                                          dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                                                          });
+                                                      }
+                                                  }
+                                              }
+                                          }];
 }
 
 - (void)setCartPaymentInfoWithID:(NSString *)paymentInfoID completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCart] stringByAppendingFormat:@"paymentinfo/%@", paymentInfoID];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"paymentInfo"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
+                                                                                                                              error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
                 }
-
-                else {
+                
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"paymentInfo"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
+                    }
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)cartDeliveryModesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:[self urlForCartDeliveryModes] httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData,
-            NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
+                                                                                                                                          NSError *error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
+                }
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
                     }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"deliveryModes"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"deliveryModes"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"deliveryModes"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"deliveryModes"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)setCartDeliveryModeWithCode:(NSString *)code completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerAddressURL = [[self urlForCartDeliveryModes] stringByAppendingFormat:@"/%@", code];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
+                                                                                                                              error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
+                }
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
                     }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"deliveryMode"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"deliveryMode"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)deleteCartDeliveryModesWithCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerAddressURL = [self urlForCartDeliveryModes];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"deliveryMode"] ? NO:YES;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
+                                                                                                                                 error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
                 }
-                else {
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"deliveryMode"] ? NO:YES;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                        });
+                    }
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)authorizeCreditCardPaymentWithSecurityCode:(NSString *)securityCode completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *authorizeURL = [[self urlForCart] stringByAppendingString:@"authorize"];
     NSString *postBody = [[NSString stringWithFormat:@"securityCode=%@", securityCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:authorizeURL httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
-                    }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"code"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
+                                                                                                                              error) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
                 }
-                else {
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"code"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                        });
+                    }
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)placeOrderForCartWithCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *plceOrderURL = [[self urlForCart] stringByAppendingString:@"placeorder"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:plceOrderURL httpMethod:@"POST" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
+        if (jsonData) {
+            if (completionBlock) {
+                if (error) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                    return;
+                }
+                
+                NSError *jsonError;
+                
+                NSMutableDictionary *dict =
+                [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                               error
+                                                                                                     :&
+                                                               jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"code"] ? YES:NO;
+                
                 if (completionBlock) {
-                    if (error) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                        return;
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
+                        });
                     }
-
-                    NSError *jsonError;
-
-                    NSMutableDictionary *dict =
-                        [NSMutableDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                            error
-                            :&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"code"] ? YES:NO;
-
-                    if (completionBlock) {
-                        if (success) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (dict, error);
-                                });
-                        }
-                        else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                }
-                else if (jsonData == nil && error == nil) {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (),
-                            ^{ completionBlock  (nil,
-                                    [NSError errorWithDomain:@"com.hybris" code:1 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-                                            @"Webservice returned nil", @"message",
-                                            nil]]);
-                            });
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else if (jsonData == nil && error == nil) {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (),
+                                    ^{ completionBlock  (nil,
+                                                         [NSError errorWithDomain:@"com.hybris" code:1 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                                                                 @"Webservice returned nil", @"message",
+                                                                                                                 nil]]);
+                                    });
+                }
+            }
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)ordersWithOptions:(NSDictionary *)options completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSMutableString *queryString = [[NSMutableString alloc] init];
-
+    
     for (NSString *aKey in options) {
         if (queryString.length == 0) {
             [queryString appendFormat:@"%@=%@", aKey, [options objectForKey:aKey]];
@@ -1387,259 +1423,267 @@ PureSingleton(HYWebService);
             [queryString appendFormat:@"&%@=%@", aKey, [options objectForKey:aKey]];
         }
     }
-
+    
     NSString *ordersURL = [[self urlForOrders] stringByAppendingFormat:@"?%@", queryString];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:ordersURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
-            if (jsonData) {
-                if (completionBlock) {
-                    if (completionBlock) {
-                        if (error) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                                });
-                            return;
-                        }
-
-                        NSError *jsonError;
-
-                        NSDictionary *dict =
-                            [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                                error:&
-                                jsonError]
-                            ];
-
-                        if (jsonError) {
-                            [self debug:jsonData];
-
-                            if (completionBlock) {
-                                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                    });
-                            }
-
-                            return;
-                        }
-
-                        BOOL success = [dict objectForKey:@"orders"] ? YES:NO;
-
-                        if (completionBlock) {
-                            if (success) {
-                                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                    });
-                            }
-                            else {
-                                dispatch_async (dispatch_get_main_queue (),
-                                    ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                    });
-                            }
-                        }
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
-}
-
-- (void)orderDetailsWithID:(NSString *)orderID completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
-    NSString *ordersURL = [[self urlForOrders] stringByAppendingFormat:@"%@", orderID];
-
-    (void)[[HYWebServiceDataProvider alloc] authorizedURL:ordersURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
+        if (jsonData) {
             if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                if (completionBlock) {
+                    if (error) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
                         });
-                    return;
-                }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]
-                        ];
-
-                    if (jsonError) {
-                        [self debug:jsonData];
-
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
                         return;
                     }
-
-                    BOOL success = [dict objectForKey:@"code"] ? YES:NO;
-
+                    
+                    NSError *jsonError;
+                    
+                    NSDictionary *dict =
+                    [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                                                             error:&
+                                                            jsonError]
+                     ];
+                    
+                    if (jsonError) {
+                        [self debug:jsonData];
+                        
+                        if (completionBlock) {
+                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                            });
+                        }
+                        
+                        return;
+                    }
+                    
+                    BOOL success = [dict objectForKey:@"orders"] ? YES:NO;
+                    
                     if (completionBlock) {
                         if (success) {
                             dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
+                            });
                         }
                         else {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
+                            dispatch_async (dispatch_get_main_queue (),
+                                            ^{ completionBlock  (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                                            });
                         }
                     }
                 }
             }
             else {
                 if (completionBlock) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                        });
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock  (nil, error);
+                    });
                 }
             }
-        }];
+        }
+    }];
+}
+
+- (void)orderDetailsWithID:(NSString *)orderID completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
+    NSString *ordersURL = [[self urlForOrders] stringByAppendingFormat:@"%@", orderID];
+    
+    (void)[[HYWebServiceDataProvider alloc] authorizedURL:ordersURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]
+                 ];
+                
+                if (jsonError) {
+                    [self debug:jsonData];
+                    
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                BOOL success = [dict objectForKey:@"code"] ? YES:NO;
+                
+                if (completionBlock) {
+                    if (success) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
+                    }
+                    else {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
+                    }
+                }
+            }
+        }
+        else {
+            if (completionBlock) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+            }
+        }
+    }];
 }
 
 #pragma mark - Customer methods
 
 - (void)loginWithUsername:(NSString *)userName password:(NSString *)password completionBlock:(NSErrorBlock)completionBlock {
     [[HYWebServiceDataProvider alloc] loginWithUsername:userName password:password completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
-                    return;
-                }
-
-                NSError *jsonError;
-
-                NSDictionary *dict =
-                    [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                        jsonError]];
-
-                if (jsonError) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                        });
-                    return;
-                }
-
-                BOOL success = [dict objectForKey:@"access_token"] ? YES:NO;
-
-                if (success) {
-                    [HYWebServiceAuthProvider saveTokensWithDictionary:dict];
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
-                }
-                else {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                        });
-                }
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
             }
-        }];
+            
+            NSError *jsonError;
+            
+            NSDictionary *dict =
+            [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                    jsonError]];
+            
+            if (jsonError) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
+                });
+                return;
+            }
+            
+            BOOL success = [dict objectForKey:@"access_token"] ? YES:NO;
+            
+            if (success) {
+                [HYWebServiceAuthProvider saveTokensWithDictionary:dict];
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+            }
+            else {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                });
+            }
+        }
+    }];
 }
 
 - (void)logoutWithCompletionBlock:(NSErrorBlock)completionBlock {
     [[HYWebServiceDataProvider alloc] logoutWithCompletionBlock:^(NSData *jsonData, NSError *error) {
-            // Clear the tokens and cookies clientside, whatever happens with the server
-            [HYWebServiceAuthProvider clearAuthInformation];
-
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
-                    return;
-                }
-
-                NSError *jsonError;
-
-                NSDictionary *dict =
-                    [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                        jsonError]];
-
-                if (jsonError) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                        });
-                    return;
-                }
-
-                BOOL success = [[dict objectForKey:@"success"] boolValue] ? YES:NO;
-
-                if (success) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
-                }
-                else {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                        });
-                }
+        // Clear the tokens and cookies clientside, whatever happens with the server
+        [HYWebServiceAuthProvider clearAuthInformation];
+        
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
             }
-        }];
+            
+            NSError *jsonError;
+            
+            NSDictionary *dict =
+            [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                    jsonError]];
+            
+            if (jsonError) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
+                });
+                return;
+            }
+            
+            BOOL success = [[dict objectForKey:@"success"] boolValue] ? YES:NO;
+            
+            if (success) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+            }
+            else {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                });
+            }
+        }
+    }];
 }
 
-- (void)registerCustomerWithFirstName:(NSString *)firstName
+- (void)registerCustomerWithFirstName: (NSString *)firstName
                              lastName:(NSString *)lastName
                             titleCode:(NSString *)titleCode
                                 login:(NSString *)login
                              password:(NSString *)password
+                               mobile:(NSString *)mobile
+                               gender:(NSString *)gender
                       completionBlock:(NSErrorBlock)completionBlock {
     //Generate credentials auth_token
     [self clientCredentialsTokenWithCompletionBlock:^(NSDictionary *dict, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+        
+        NSLog(@"Error on Customer Registration Service %@",error);
+        
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
+            }
+        }
+        
+        NSString *tempAuthToken = [dict objectForKey:@"access_token"];
+        NSString *postBody =
+        [NSString stringWithFormat:@"login=%@&password=%@&titleCode=%@&firstName=%@&lastName=%@&mobile=%@&gender=%@", login, password, titleCode,firstName, lastName,mobile,gender];
+        NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
+        
+        [[HYWebServiceDataProvider alloc] authorizedURL:[self urlForCustomer] clientCredentialsToken:tempAuthToken httpBody:postData completionBlock:^(
+                                                                                                                                                       NSData *jsonData, NSError *error) {
+            
+            NSLog(@"JSON data %@",jsonData);
+            
+            if (jsonData) {
+                if (completionBlock) {
+                    if (error) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
                         });
-                    return;
+                        return;
+                    }
+                    
+                    NSError *jsonError;
+                    
+                    NSDictionary *dict =
+                    [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
+                                                                                             error:&jsonError]
+                     ];
+                    
+                    if (jsonError) {
+                        if (completionBlock) {
+                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
+                            });
+                        }
+                        
+                        return;
+                    }
+                    
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
+                    }
+                }
+                else {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                        });
+                    }
                 }
             }
-
-            NSString *tempAuthToken = [dict objectForKey:@"access_token"];
-            NSString *postBody =
-                [NSString stringWithFormat:@"login=%@&password=%@&firstName=%@&lastName=%@&titleCode=%@", login, password, firstName, lastName, titleCode];
-            NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
-            [[HYWebServiceDataProvider alloc] authorizedURL:[self urlForCustomer] clientCredentialsToken:tempAuthToken httpBody:postData completionBlock:^(
-                    NSData *jsonData, NSError *error) {
-                    if (jsonData) {
-                        if (completionBlock) {
-                            if (error) {
-                                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                                    });
-                                return;
-                            }
-
-                            NSError *jsonError;
-
-                            NSDictionary *dict =
-                                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers
-                                    error:&jsonError]
-                                ];
-
-                            if (jsonError) {
-                                if (completionBlock) {
-                                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                                        });
-                                }
-
-                                return;
-                            }
-
-                            if (completionBlock) {
-                                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                    });
-                            }
-                        }
-                        else {
-                            if (completionBlock) {
-                                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                                    });
-                            }
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                                });
-                        }
-                    }
-                }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
+                }
+            }
         }];
+    }];
 }
 
 - (void)createCustomerAddressWithFirstName:(NSString *)firstName
@@ -1652,146 +1696,146 @@ PureSingleton(HYWebService);
                             countryISOCode:(NSString *)countryISOCode
                            completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *postBody = [[NSString stringWithFormat:@"titleCode=%@&firstName=%@&lastName=%@&line1=%@&line2=%@&town=%@&postalCode=%@&country.isocode=%@",
-            titleCode,
-            firstName,
-            lastName,
-            addressLine1,
-            addressLine2,
-            town,
-            postCode,
-            countryISOCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                           titleCode,
+                           firstName,
+                           lastName,
+                           addressLine1,
+                           addressLine2,
+                           town,
+                           postCode,
+                           countryISOCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
     NSString *addressURL = [[self urlForCustomer] stringByAppendingString:@"current/addresses"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:addressURL httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"id"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"id"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
-}
-
-- (void)setDefaultCustomerAddressWithID:(NSString *)addressID completionBlock:(NSErrorBlock)completionBlock {
-    NSString *customerAddressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/default/%@", addressID];
-
-    (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (error) {
-                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                    });
-                return;
-            }
-
-            // This method returns no data if successful
-            if (jsonData) {
-                if (completionBlock) {
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:
-                            nil]];
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
                         });
+                    }
                 }
             }
             else {
                 if (completionBlock) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
                 }
             }
-        }];
+        }
+    }];
+}
+
+- (void)setDefaultCustomerAddressWithID:(NSString *)addressID completionBlock:(NSErrorBlock)completionBlock {
+    NSString *customerAddressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/default/%@", addressID];
+    
+    (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"PUT" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
+                                                                                                                              error) {
+        if (error) {
+            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+            });
+            return;
+        }
+        
+        // This method returns no data if successful
+        if (jsonData) {
+            if (completionBlock) {
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:
+                                                        nil]];
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                });
+            }
+        }
+        else {
+            if (completionBlock) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+            }
+        }
+    }];
 }
 
 - (void)customerAddressesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     NSString *addressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:addressURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    NSArray *addresses = [dict objectForKey:@"addresses"];
-
-                    if (addresses == nil) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (addresses, error);
-                                });
-                        }
+                
+                NSArray *addresses = [dict objectForKey:@"addresses"];
+                
+                if (addresses == nil) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (addresses, error);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)updateCustomerAddressWithFirstName:(NSString *)firstName
@@ -1805,88 +1849,88 @@ PureSingleton(HYWebService);
                                  addressID:(NSString *)addressID
                            completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *postBody = [[NSString stringWithFormat:@"titleCode=%@&firstName=%@&lastName=%@&line1=%@&line2=%@&town=%@&postalCode=%@&country.isocode=%@",
-            titleCode,
-            firstName,
-            lastName,
-            addressLine1,
-            addressLine2,
-            town,
-            postCode,
-            countryISOCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+                           titleCode,
+                           firstName,
+                           lastName,
+                           addressLine1,
+                           addressLine2,
+                           town,
+                           postCode,
+                           countryISOCode] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
     NSString *addressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/%@", addressID];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:addressURL httpMethod:@"PUT" httpBody:postData completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"id"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"id"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
-                    }
-                }
-            }
-        }];
-}
-
-- (void)deleteCustomerAddressWithID:(NSString *)addressID completionBlock:(NSErrorBlock)completionBlock {
-    NSString *customerAddressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/%@", addressID];
-
-    (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            // This method returns no data if successful
-            if (jsonData) {
-                if (completionBlock) {
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:
-                            nil]];
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
                         });
+                    }
                 }
             }
             else {
                 if (completionBlock) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                        });
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
                 }
             }
-        }];
+        }
+    }];
+}
+
+- (void)deleteCustomerAddressWithID:(NSString *)addressID completionBlock:(NSErrorBlock)completionBlock {
+    NSString *customerAddressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/addresses/%@", addressID];
+    
+    (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
+                                                                                                                                 error) {
+        // This method returns no data if successful
+        if (jsonData) {
+            if (completionBlock) {
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:
+                                                        nil]];
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                });
+            }
+        }
+        else {
+            if (completionBlock) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+            }
+        }
+    }];
 }
 
 - (void)updateCustomerProfileWithFirstName:(NSString *)firstName
@@ -1896,112 +1940,112 @@ PureSingleton(HYWebService);
                                   currency:(NSString *)currency
                            completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *postBody =
-        [[NSString stringWithFormat:@"firstName=%@&lastName=%@&titleCode=%@&language=%@&currency=%@", firstName, lastName, titleCode, language,
-            currency] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [[NSString stringWithFormat:@"firstName=%@&lastName=%@&titleCode=%@&language=%@&currency=%@", firstName, lastName, titleCode, language,
+      currency] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
     NSString *customerProfileURL = [[self urlForCustomer] stringByAppendingString:@"current/profile"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerProfileURL httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                                    error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"uid"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"uid"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)customerProfileWithCompletionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerAddressURL = [[self urlForCustomer] stringByAppendingString:@"current"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerAddressURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                              error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"uid"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"uid"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)updateCustomerPasswordWithNewPassword:(NSString *)newPassword oldPassword:(NSString *)oldPassword completionBlock:(NSErrorBlock)completionBlock {
@@ -2051,7 +2095,7 @@ PureSingleton(HYWebService);
     NSString *customerURL = [[self urlForCustomer] stringByAppendingString:@"current/login"];
     
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerURL httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *jsonData,
-                                                                                                                                     NSError *error) {
+                                                                                                                             NSError *error) {
         if (completionBlock) {
             if (error) {
                 dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
@@ -2086,7 +2130,7 @@ PureSingleton(HYWebService);
                 else {
                     if (completionBlock) {
                         dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                            });
+                        });
                     }
                 }
                 
@@ -2103,147 +2147,147 @@ PureSingleton(HYWebService);
 
 - (void)customerPaymentInfosWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCustomer] stringByAppendingString:@"current/paymentinfos"];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                              error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"paymentInfos"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"paymentInfos"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"paymentInfos"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"paymentInfos"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)customerPaymentInfoWithID:(NSString *)paymentInfoID completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCustomer] stringByAppendingFormat:@"current/paymentinfos/%@", paymentInfoID];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL httpMethod:@"GET" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                                                                                                                              error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"id"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"id"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)deleteCustomerPaymentInfoWithID:(NSString *)paymentInfoID completionBlock:(NSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCustomer] stringByAppendingFormat:@"current/paymentinfos/%@", paymentInfoID];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL httpMethod:@"DELETE" httpBody:nil completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                                                                                                                                 error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                            });
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                            });
-                    }
+                
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)updateCustomerPaymentInfoWithAccountHolderName:(NSString *)accountHolderName
@@ -2257,54 +2301,54 @@ PureSingleton(HYWebService);
                                        completionBlock:(NSErrorBlock)completionBlock {
     NSString *customerPaymentURL = [[self urlForCustomer] stringByAppendingFormat:@"current/paymentinfos/%@", paymentInfoID];
     NSString *postBody =
-        [[NSString stringWithFormat:@"accountHolderName=%@&cardNumber=%@&cardType=%@&expiryMonth=%@&expiryYear=%@&saved=%@&defaultPaymentInfo=%@",
-            accountHolderName,
-            cardNumber,
-            cardType,
-            expiryMonth,
-            expiryYear,
-            shouldSave ? @"true":@"false",
-            isDefaultPaymentInfo ? @"true":@"false"] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [[NSString stringWithFormat:@"accountHolderName=%@&cardNumber=%@&cardType=%@&expiryMonth=%@&expiryYear=%@&saved=%@&defaultPaymentInfo=%@",
+      accountHolderName,
+      cardNumber,
+      cardType,
+      expiryMonth,
+      expiryYear,
+      shouldSave ? @"true":@"false",
+      isDefaultPaymentInfo ? @"true":@"false"] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:customerPaymentURL httpMethod:@"PUT" httpBody:postData completionBlock:^(NSData *jsonData, NSError *
-            error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                                                                                                                                   error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                            });
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                            });
-                    }
+                
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                    });
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)updateCustomerPaymentInfoBillingAddresssWithFirstName:(NSString *)firstName
@@ -2319,53 +2363,53 @@ PureSingleton(HYWebService);
                                                 paymentInfoID:(NSString *)paymentInfoID
                                               completionBlock:(NSErrorBlock)completionBlock {
     NSString *postBody =
-        [[NSString stringWithFormat:@"titleCode=%@&firstName=%@&lastName=%@&line1=%@&line2=%@&town=%@&postalCode=%@&country.isocode=%@&defaultPaymentInfo=%@",
-            titleCode,
-            firstName,
-            lastName,
-            addressLine1,
-            addressLine2,
-            town,
-            postCode,
-            countryISOCode,
-            isDefaultPaymentInfo ? @"true":@"false"]
-        stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [[NSString stringWithFormat:@"titleCode=%@&firstName=%@&lastName=%@&line1=%@&line2=%@&town=%@&postalCode=%@&country.isocode=%@&defaultPaymentInfo=%@",
+      titleCode,
+      firstName,
+      lastName,
+      addressLine1,
+      addressLine2,
+      town,
+      postCode,
+      countryISOCode,
+      isDefaultPaymentInfo ? @"true":@"false"]
+     stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     NSData *postData = [NSData dataWithBytes:[postBody UTF8String] length:[postBody length]];
     NSString *addressURL = [[self urlForCustomer] stringByAppendingFormat:@"current/paymentinfos/%@/address", paymentInfoID];
-
+    
     (void)[[HYWebServiceDataProvider alloc] authorizedURL:addressURL httpMethod:@"POST" httpBody:postData completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                            });
-                    }
-                }
-                else {
-                    if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
-                            });
-                    }
+                
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 #pragma mark - Misc methods
@@ -2430,311 +2474,443 @@ PureSingleton(HYWebService);
 
 - (void)languagesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForLanguages] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"languages"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"languages"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"languages"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"languages"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)currenciesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForCurrencies] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"currencies"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"currencies"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"currencies"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"currencies"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 // List all supported countries
 - (void)countriesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForDeliveryCountries] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"countries"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"countries"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"countries"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"countries"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)cardTypesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForCardTypes] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"cardTypes"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"cardTypes"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"cardTypes"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"cardTypes"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)titlesWithCompletionBlock:(NSArrayNSErrorBlock)completionBlock {
     (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForTitles] completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"titles"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"titles"], error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"titles"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock ([dict objectForKey:@"titles"], error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
-- (void)suggestionsForQuery:(NSString *)query completionBlock:(NSArrayBlock)completionBlock {
-    NSString *suggestionURL = [[self urlForProducts] stringByAppendingFormat:@"suggest?term=%@&max=10", query];
-
-    (void)[[HYWebServiceDataProvider alloc] initWithURL:suggestionURL completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+-(void)getDataForBanner:(NSString * )query completionBlock:(NSArrayBlock)completionBlock {
+      
+    
+    (void)[[HYWebServiceDataProvider alloc] initWithURL:[self urlForBanner] completionBlock:^(NSData *jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    NSMutableArray *results = [[NSMutableArray alloc] init];
-
-                    for (NSDictionary *d in[dict objectForKey:@"suggestions"]) {
-                        [results addObject:[d objectForKey:@"value"]];
-                    }
-
-                    BOOL success = results.count ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (results);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
-                                });
-                        }
+                
+                NSMutableArray *results = [[NSMutableArray alloc] init];
+                
+                NSMutableArray * responseArray = [[NSMutableArray alloc] init];
+                
+                responseArray = [dict objectForKey:@"bannerList"];
+                
+                
+                
+                for (int i = 0; i< [responseArray count]; i++) {
+                    HYBanner * bannerList = [[HYBanner alloc] init];
+                    NSDictionary * dictionaryForImage = [[NSDictionary alloc] init];
+                    dictionaryForImage = [responseArray objectAtIndex:i];
+                    bannerList.URLlink = [self UrlLink:[dictionaryForImage objectForKey:@"URL_link"]];
+                    bannerList.imageUrl = [self imgURL:[dictionaryForImage objectForKey:@"image_url_link"]];
+                    [results addObject:bannerList];
+                    bannerList = nil;
+                }
+                
+                BOOL success = results.count ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (results);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
                         dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
-                            });
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                    });
+                }
+            }
+        }
+    }];
+    
+    
+}
+
+- (void)searchForAutoComplete:(NSString *)query completionBlock:(NSArrayBlock)completionBlock {
+    NSString *suggestionURL = [[self urlForProducts] stringByAppendingFormat:@"autoSearch?term=%@&max=10", query];
+    
+    (void)[[HYWebServiceDataProvider alloc] initWithURL:suggestionURL completionBlock:^(NSData *jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                NSMutableArray *results = [[NSMutableArray alloc] init];
+                
+                for (NSDictionary *d in[dict objectForKey:@"productList"]) {
+                    if ([d objectForKey:@"summary"]) {
+                         [results addObject:[d objectForKey:@"summary"]];
+                    }
+                   }
+                
+                BOOL success = results.count ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (results);
+                        });
+                    }
+                }
+                else {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                        });
+                    }
+                }
+            }
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                    });
+                }
+            }
+        }
+    }];
+}
+
+- (void)suggestionsForQuery:(NSString *)query completionBlock:(NSArrayBlock)completionBlock {
+    NSString *suggestionURL = [[self urlForProducts] stringByAppendingFormat:@"suggest?term=%@&max=10", query];
+    
+    (void)[[HYWebServiceDataProvider alloc] initWithURL:suggestionURL completionBlock:^(NSData *jsonData, NSError *error) {
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                        });
+                    }
+                    
+                    return;
+                }
+                
+                NSMutableArray *results = [[NSMutableArray alloc] init];
+                
+                for (NSDictionary *d in[dict objectForKey:@"suggestions"]) {
+                    [results addObject:[d objectForKey:@"value"]];
+                }
+                
+                BOOL success = results.count ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (results);
+                        });
+                    }
+                }
+                else {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                        });
+                    }
+                }
+            }
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)storesAtLocation:(CLLocation *)location withCurrentPage:(NSInteger) currentPage  radius:(float)radius completionBlock:(NSDictionaryNSErrorBlock)completionBlock {
@@ -2745,107 +2921,110 @@ PureSingleton(HYWebService);
                                 [NSString stringWithFormat:@"%f", radius],
                                 [NSString stringWithFormat:@"%f", accuracy],
                                 currentPage
-        ];
-
+                                ];
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:storeSearchURL completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"stores"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                BOOL success = [dict objectForKey:@"stores"] ? YES:NO;
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 - (void)storesWithQueryString:(NSString *)query withCurrentPage:(NSInteger) currentPage completionBlock:(NSDictionaryNSErrorBlock)completionBlock{
     NSString *storeSearchURL = [[self urlForStores] stringByAppendingFormat:@"?query=%@&options=HOURS&currentPage=%i", query,currentPage];
-
+    
     (void)[[HYWebServiceDataProvider alloc] initWithURL:storeSearchURL completionBlock:^(NSData *jsonData, NSError *error) {
-            if (completionBlock) {
-                if (error) {
-                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+        if (completionBlock) {
+            if (error) {
+                dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                });
+                return;
+            }
+            
+            if (jsonData) {
+                NSError *jsonError;
+                
+                NSDictionary *dict =
+                [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
+                                                        jsonError]];
+                
+                if (jsonError) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
                         });
+                    }
+                    
                     return;
                 }
-
-                if (jsonData) {
-                    NSError *jsonError;
-
-                    NSDictionary *dict =
-                        [NSDictionary dictionaryWithDictionary:[NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&
-                            jsonError]];
-
-                    if (jsonError) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, jsonError);
-                                });
-                        }
-
-                        return;
-                    }
-
-                    BOOL success = [dict objectForKey:@"stores"] ? YES:NO;
-
-                    if (success) {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
-                                });
-                        }
-                    }
-                    else {
-                        if (completionBlock) {
-                            dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
-                                });
-                        }
+                
+                
+                
+                BOOL success = [dict objectForKey:@"results"] ? YES:NO;
+               
+                
+                if (success) {
+                    if (completionBlock) {
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (dict, error);
+                        });
                     }
                 }
                 else {
                     if (completionBlock) {
-                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
-                            });
+                        dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, [NSError errorWithDomain:@"com.hybris" code:1 userInfo:dict]);
+                        });
                     }
                 }
             }
-        }];
+            else {
+                if (completionBlock) {
+                    dispatch_async (dispatch_get_main_queue (), ^{ completionBlock (nil, error);
+                    });
+                }
+            }
+        }
+    }];
 }
 
 @end

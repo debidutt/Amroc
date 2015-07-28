@@ -92,24 +92,7 @@
     }
 
     [self waitViewShow:YES];
-    [[HYWebService shared] registerCustomerWithFirstName:[array objectAtIndex:1] lastName:[array objectAtIndex:2] titleCode:titleCode login:[array
-            objectAtIndex:3] password:[array objectAtIndex:4] completionBlock:^(NSError *error) {
-            if (error) {
-                [[HYAppDelegate sharedDelegate] alertWithError:error];
-                self.navigationItem.rightBarButtonItem.enabled = YES;
-            }
-            else {
-                UIAlertView *alert =
-                [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Success", @"Success alert box title") message:NSLocalizedString(@"User registration successful", @"") delegate:nil cancelButtonTitle:NSLocalizedString(@"OK", @"OK button") otherButtonTitles:nil];
-                [alert show];
 
-                [[HYAppDelegate sharedDelegate] setIsLoggedIn:YES];
-                [[HYAppDelegate sharedDelegate] setUsername:[array objectAtIndex:3]];
-                [self.navigationController popViewControllerAnimated:YES];
-            }
-
-            [self waitViewShow:NO];
-        }];
 }
 
 @end

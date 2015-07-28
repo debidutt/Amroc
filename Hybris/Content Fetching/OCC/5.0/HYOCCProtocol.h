@@ -276,6 +276,8 @@
                             titleCode:(NSString *)titleCode
                                 login:(NSString *)login
                              password:(NSString *)password
+                               mobile:(NSString *)mobile
+                               gender:(NSString *)gender
                       completionBlock:(NSErrorBlock)completionBlock;
 
 

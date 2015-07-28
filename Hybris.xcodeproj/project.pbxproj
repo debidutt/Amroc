@@ -69,11 +69,9 @@
 		275dea62e62b6449a46fcec7 /* HYLinkURLSchemeController.m in Sources */ = {isa = PBXBuildFile; fileRef = D4C02BBC17A6D79C00817A72 /* HYLinkURLSchemeController.m */; };
 		27f7192fb923484747eb0af0 /* HYStoreSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F599411166768CA0048232B /* HYStoreSearchViewController.m */; };
 		297eb277c0396e6f2576b3f4 /* arrow-right.png in Resources */ = {isa = PBXBuildFile; fileRef = 7FD7C2FF166E0EF90054B9E1 /* arrow-right.png */; };
-		297fa0691c9f8a39eb9931c3 /* HYLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE170EFA15EE254D00774EE9 /* HYLoginViewController.m */; };
 		2a7da7f78ce1a71921def41b /* HYProductPriceCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F6535015EE772E00393AE2 /* HYProductPriceCell.m */; };
 		2ce68d239b7ecb477c025302 /* HYDidYouMean+Factory.m in Sources */ = {isa = PBXBuildFile; fileRef = D4651A2C15ED1491004A0F43 /* HYDidYouMean+Factory.m */; };
 		2d6f8af2590a39079f7ae30b /* HYMapViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F59943E166922B20048232B /* HYMapViewCell.m */; };
-		2e356b1576af996419459e7e /* LICENCE.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC524E1846505B003F2FFA /* LICENCE.md */; };
 		2ecbd5bca7991c71c0080874 /* NSObject+SafeSet.m in Sources */ = {isa = PBXBuildFile; fileRef = C24F763616D6A67F00A034C4 /* NSObject+SafeSet.m */; };
 		2f9d0abdfdaf3ebf4468c513 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = D4ACAE391577937000791495 /* Icon.png */; };
 		2f9d55b0eb388706bd1de3c6 /* tab-user@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D447CA92160B4419009D54B8 /* tab-user@2x.png */; };
@@ -107,7 +105,6 @@
 		4ed811402dfdeeea635a5ca9 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4EBCC72158229D200F0D5DB /* ImageIO.framework */; };
 		4f624ad04c244e6164a923c8 /* HYStoreLocatorAddressCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5994311667D3350048232B /* HYStoreLocatorAddressCell.m */; };
 		504f9f4e2b47af318c837305 /* location-button@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F599416166769C40048232B /* location-button@2x.png */; };
-		50c08c2b0159e969c8571566 /* Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDC524D1846505B003F2FFA /* Base64.m */; };
 		51192e7504936b924a99590e /* tabbar-background.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F84CB8F1676046300CE73E1 /* tabbar-background.png */; };
 		51889cb4f0817ed1e4d10d39 /* HYLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A2E6471559379E0041DB66 /* HYLabel.m */; };
 		52d4424c878f0f403c92bae8 /* HYBasicAttributedCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = C24B226917047F7C0095F203 /* HYBasicAttributedCell.xib */; };
@@ -223,7 +220,6 @@
 		8995576f7fbd2869886a9752 /* HYFormViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4A5D28116088AB500C3C305 /* HYFormViewController.xib */; };
 		8a703256bdc93ea890e258e7 /* HYBasicAttributedCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C24B226717047AAE0095F203 /* HYBasicAttributedCell.m */; };
 		8b315bc35f3042a189f0e5bb /* HYExtendedFooterView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F6534315EE412E00393AE2 /* HYExtendedFooterView.m */; };
-		8cf121f30dce5dfe5693a560 /* iPhoneStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D4A2E63A1559377D0041DB66 /* iPhoneStoryboard.storyboard */; };
 		8d1ed72eb0040aaac2a892c7 /* action-facebook@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D447CA96160B54D8009D54B8 /* action-facebook@2x.png */; };
 		8d9985773308411cea32da4e /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D43A7224155AA1D300278386 /* CFNetwork.framework */; };
 		8da3b110777b0a400e862be7 /* ChangeLogin.plist in Resources */ = {isa = PBXBuildFile; fileRef = C26307AE16F0BC3D00F8B9D0 /* ChangeLogin.plist */; };
@@ -242,7 +238,6 @@
 		99bdeab6edf31956f18a6c55 /* PaymentDetails.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB60164D7B3800841AC3 /* PaymentDetails.plist */; };
 		99c5a123b948cb31b4802a0c /* MWPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = C274718117B0414200E593B5 /* MWPhoto.m */; };
 		9c3dc64820f67b6b1d4017e0 /* IASKPSSliderSpecifierViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = D4969E7A158B707A007D5EC3 /* IASKPSSliderSpecifierViewCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		9d095609b8a169ae1b144692 /* RELEASE NOTES.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC52501846505B003F2FFA /* RELEASE NOTES.md */; };
 		9e774119d2e52934dd73a6f2 /* tab-scan@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D460167016A6AFDD005AB2FA /* tab-scan@2x.png */; };
 		9ecad58af48472dd8f0561fb /* Cart.m in Sources */ = {isa = PBXBuildFile; fileRef = FE3BD1F015E63E580023575C /* Cart.m */; };
 		9ee54e0fa3f40aec1f61c72c /* HYDescriptionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D491AE89161464E700C9D673 /* HYDescriptionViewController.m */; };
@@ -387,7 +382,7 @@
 		D49A5CE2159343B200471742 /* ProductCellPlaceholder.png in Resources */ = {isa = PBXBuildFile; fileRef = D49A5CDE159343B200471742 /* ProductCellPlaceholder.png */; };
 		D49AF7191593723200BD10A5 /* HYFooterView.m in Sources */ = {isa = PBXBuildFile; fileRef = D49AF7181593723200BD10A5 /* HYFooterView.m */; };
 		D49AF7271593795D00BD10A5 /* HYWebService.m in Sources */ = {isa = PBXBuildFile; fileRef = D49AF7261593795D00BD10A5 /* HYWebService.m */; };
-		D49CBB57164D7A9000841AC3 /* categories.electronics.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB59164D7A9000841AC3 /* categories.electronics.plist */; };
+		D49CBB57164D7A9000841AC3 /* categories.croma_retail_shop.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB59164D7A9000841AC3 /* categories.croma_retail_shop.plist */; };
 		D49CBB5B164D7B3200841AC3 /* Address.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB5D164D7B3200841AC3 /* Address.plist */; };
 		D49CBB5E164D7B3800841AC3 /* PaymentDetails.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB60164D7B3800841AC3 /* PaymentDetails.plist */; };
 		D49CBB61164D7B3E00841AC3 /* UserRegistration.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB63164D7B3E00841AC3 /* UserRegistration.plist */; };
@@ -418,7 +413,6 @@
 		D4A2E65D155937BD0041DB66 /* EGViewFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A2E658155937BD0041DB66 /* EGViewFactory.m */; };
 		D4A2E66C1559381E0041DB66 /* HYLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A2E6471559379E0041DB66 /* HYLabel.m */; };
 		D4A2E66D155938210041DB66 /* ViewFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A2E6491559379E0041DB66 /* ViewFactory.m */; };
-		D4A2E6921559501A0041DB66 /* iPhoneStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D4A2E63A1559377D0041DB66 /* iPhoneStoryboard.storyboard */; };
 		D4A426EE156BDD0100BA6843 /* settings.plist in Resources */ = {isa = PBXBuildFile; fileRef = D4A426ED156BDD0100BA6843 /* settings.plist */; };
 		D4A426F1156BDDE300BA6843 /* PListSerialisation.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A426F0156BDDE300BA6843 /* PListSerialisation.m */; };
 		D4A426F2156BDDE300BA6843 /* PListSerialisation.m in Sources */ = {isa = PBXBuildFile; fileRef = D4A426F0156BDDE300BA6843 /* PListSerialisation.m */; };
@@ -489,9 +483,29 @@
 		D4F661FD1615FB13009BB3EA /* ScrollingTileBarTileFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F661FC1615FB13009BB3EA /* ScrollingTileBarTileFactory.m */; };
 		D4FE9AF2169892FD003FBCED /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4FE9AF1169892FD003FBCED /* SystemConfiguration.framework */; };
 		D4FE9AF41698EDEF003FBCED /* headerBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D4FE9AF31698EDEF003FBCED /* headerBackground@2x.png */; };
+		E52340FF1B4E7EF300A55A0A /* HYSignUpViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E52340FE1B4E7EF200A55A0A /* HYSignUpViewController.m */; };
+		E52341011B4E881B00A55A0A /* HYSignUpViewController.h in Sources */ = {isa = PBXBuildFile; fileRef = E52341001B4E7F2200A55A0A /* HYSignUpViewController.h */; };
+		E5371C431B453E87002DF442 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E5371C421B453E87002DF442 /* MobileCoreServices.framework */; };
+		E53BF8731B623E3A00A4D783 /* HYHomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E53BF8721B623E3A00A4D783 /* HYHomeViewController.m */; };
+		E53BF8761B623F6F00A4D783 /* HYBanner.m in Sources */ = {isa = PBXBuildFile; fileRef = E53BF8751B623F6F00A4D783 /* HYBanner.m */; };
+		E544672D1B67B0B700B9100E /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E544672C1B67B0B700B9100E /* AddressBook.framework */; };
+		E544672F1B67B0BF00B9100E /* AddressBookUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E544672E1B67B0BF00B9100E /* AddressBookUI.framework */; };
+		E550C8BC1B660D9300E53ED7 /* HYProductSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E550C8BB1B660D9300E53ED7 /* HYProductSearchViewController.m */; };
+		E57D23C11B59284300CA2E1F /* HYLandingPageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E57D23C01B59284300CA2E1F /* HYLandingPageViewController.m */; };
+		E5890B531B57B5C7008C3188 /* iPhoneStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E5890B521B57B5C7008C3188 /* iPhoneStoryboard.storyboard */; };
+		E58C3D821B42B91400E33666 /* NSData+IDZGunzip.m in Sources */ = {isa = PBXBuildFile; fileRef = E58C3D811B42B91400E33666 /* NSData+IDZGunzip.m */; };
+		E58C3D881B42D6A300E33666 /* NSData+Decompression.m in Sources */ = {isa = PBXBuildFile; fileRef = E58C3D871B42D6A300E33666 /* NSData+Decompression.m */; };
+		E58C3D8B1B4304E200E33666 /* NSData+DecodingBase64String.m in Sources */ = {isa = PBXBuildFile; fileRef = E58C3D8A1B4304E200E33666 /* NSData+DecodingBase64String.m */; };
+		E58C3D9D1B44324000E33666 /* Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = E58C3D991B44324000E33666 /* Base64.m */; };
+		E58C3D9E1B44324000E33666 /* LICENCE.md in Resources */ = {isa = PBXBuildFile; fileRef = E58C3D9A1B44324000E33666 /* LICENCE.md */; };
+		E58C3D9F1B44324000E33666 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = E58C3D9B1B44324000E33666 /* README.md */; };
+		E58C3DA01B44324000E33666 /* RELEASE NOTES.md in Resources */ = {isa = PBXBuildFile; fileRef = E58C3D9C1B44324000E33666 /* RELEASE NOTES.md */; };
+		E58C3DA31B4516AF00E33666 /* GZIP.m in Sources */ = {isa = PBXBuildFile; fileRef = E58C3DA21B4516AF00E33666 /* GZIP.m */; };
+		E5988F8F1B57E96400098D35 /* HYLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E5988F8E1B57E96400098D35 /* HYLoginViewController.m */; };
+		E5988F981B58D7FE00098D35 /* HYPageContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E5988F971B58D7FE00098D35 /* HYPageContentViewController.m */; };
+		E5F3C6B01B4598A600F4241F /* NSData+Based64.m in Sources */ = {isa = PBXBuildFile; fileRef = E5F3C6AF1B4598A600F4241F /* NSData+Based64.m */; };
 		FE0B75701573A668005DBFBC /* HYFacet+Factory.m in Sources */ = {isa = PBXBuildFile; fileRef = FE0B756F1573A668005DBFBC /* HYFacet+Factory.m */; };
 		FE0B75711573A668005DBFBC /* HYFacet+Factory.m in Sources */ = {isa = PBXBuildFile; fileRef = FE0B756F1573A668005DBFBC /* HYFacet+Factory.m */; };
-		FE170EFB15EE254D00774EE9 /* HYLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE170EFA15EE254D00774EE9 /* HYLoginViewController.m */; };
 		FE170F0815EE836800774EE9 /* HYRegisterUserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE170F0715EE836700774EE9 /* HYRegisterUserViewController.m */; };
 		FE1AD13F1619F0A10016DEFE /* HYBasicCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE1AD13816199ECA0016DEFE /* HYBasicCell.xib */; };
 		FE1AD148161B04B40016DEFE /* HYProductOrderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1AD142161AFB2B0016DEFE /* HYProductOrderCell.m */; };
@@ -533,10 +547,6 @@
 		FEDB83C715F623BB00959B62 /* HYTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDB83C015F623BB00959B62 /* HYTableViewController.m */; };
 		FEDB83C815F623BB00959B62 /* HYViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDB83C215F623BB00959B62 /* HYViewController.m */; };
 		FEDB83DB15F6642200959B62 /* HYInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDB83D815F6642200959B62 /* HYInfoViewController.m */; };
-		FEDC52511846505B003F2FFA /* Base64.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDC524D1846505B003F2FFA /* Base64.m */; };
-		FEDC52521846505B003F2FFA /* LICENCE.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC524E1846505B003F2FFA /* LICENCE.md */; };
-		FEDC52531846505B003F2FFA /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC524F1846505B003F2FFA /* README.md */; };
-		FEDC52541846505B003F2FFA /* RELEASE NOTES.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC52501846505B003F2FFA /* RELEASE NOTES.md */; };
 		FEDC8A8C15F8A0C100E8223E /* HYCheckoutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDC8A8B15F8A0C100E8223E /* HYCheckoutViewController.m */; };
 		FEDC8A8F15F8A59700E8223E /* HYAddressDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDC8A8E15F8A59500E8223E /* HYAddressDetailViewController.m */; };
 		FEE40F0315FE3DFB00D9DA6A /* HYPaymentListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEE40F0215FE3DFB00D9DA6A /* HYPaymentListViewController.m */; };
@@ -577,7 +587,6 @@
 		bd66b9ed6fe4ba6f853530ab /* HYProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = D4010DBE15875BB100F203FE /* HYProgressView.m */; };
 		bda76776889ae79f3d156247 /* tab-stores@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D460167116A6AFDD005AB2FA /* tab-stores@2x.png */; };
 		bdf22ba92d7e78fd3ee3c148 /* scan-green@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F516A5C1665235F0041127B /* scan-green@2x.png */; };
-		be040926c5aab1bb7c65cc26 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = FEDC524F1846505B003F2FFA /* README.md */; };
 		bea54cba9313ff05113d7070 /* ScrollingTileBarTileFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = D4F661FC1615FB13009BB3EA /* ScrollingTileBarTileFactory.m */; };
 		bfcf84ef8e3d04698d232b21 /* HYSectionHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = FE903FB3158B62570039DC05 /* HYSectionHeader.m */; };
 		c08d8345569ee72cdabc171a /* categories.apparel-uk.plist in Resources */ = {isa = PBXBuildFile; fileRef = C21EEB9E16DE8E930000FE44 /* categories.apparel-uk.plist */; };
@@ -647,7 +656,7 @@
 		fa646b5d8eefc93333bf7c76 /* HYOrderListCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C2881EAB16F7B38800243ECC /* HYOrderListCell.m */; };
 		fd9eee2a042cce9b4aba4d3d /* IASKSettingsStoreUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = D4969E74158B707A007D5EC3 /* IASKSettingsStoreUserDefaults.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		fdad39802830306673b324ce /* HYViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEDB83C215F623BB00959B62 /* HYViewController.m */; };
-		ff9bc33b17846151f5a36757 /* categories.electronics.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB59164D7A9000841AC3 /* categories.electronics.plist */; };
+		ff9bc33b17846151f5a36757 /* categories.croma_retail_shop.plist in Resources */ = {isa = PBXBuildFile; fileRef = D49CBB59164D7A9000841AC3 /* categories.croma_retail_shop.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -924,8 +933,8 @@
 		D49AF7181593723200BD10A5 /* HYFooterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYFooterView.m; path = "User Journey/Base User Journey/Views/HYFooterView.m"; sourceTree = "<group>"; };
 		D49AF7251593795D00BD10A5 /* HYWebService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYWebService.h; path = "Hybris/Content Fetching/OCC/5.0/HYWebService.h"; sourceTree = SOURCE_ROOT; };
 		D49AF7261593795D00BD10A5 /* HYWebService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYWebService.m; path = "Hybris/Content Fetching/OCC/5.0/HYWebService.m"; sourceTree = SOURCE_ROOT; };
-		D49CBB58164D7A9000841AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/categories.electronics.plist; sourceTree = "<group>"; };
-		D49CBB5A164D7A9800841AC3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/categories.electronics.plist; sourceTree = "<group>"; };
+		D49CBB58164D7A9000841AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/categories.croma_retail_shop.plist; sourceTree = "<group>"; };
+		D49CBB5A164D7A9800841AC3 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = de; path = de.lproj/categories.croma_retail_shop.plist; sourceTree = "<group>"; };
 		D49CBB5C164D7B3200841AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/Address.plist; sourceTree = "<group>"; };
 		D49CBB5F164D7B3800841AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/PaymentDetails.plist; sourceTree = "<group>"; };
 		D49CBB62164D7B3E00841AC3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = en; path = en.lproj/UserRegistration.plist; sourceTree = "<group>"; };
@@ -960,7 +969,6 @@
 		D4A2E5DE1552E80B0041DB66 /* HybrisTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HybrisTests.m; sourceTree = "<group>"; };
 		D4A2E624155928650041DB66 /* HYApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYApplication.h; sourceTree = "<group>"; };
 		D4A2E625155928650041DB66 /* HYApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYApplication.m; sourceTree = "<group>"; };
-		D4A2E63A1559377D0041DB66 /* iPhoneStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = iPhoneStoryboard.storyboard; path = "User Journey/Base User Journey/Storyboards/iPhoneStoryboard.storyboard"; sourceTree = "<group>"; };
 		D4A2E6441559379E0041DB66 /* HYButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYButton.h; path = "User Journey/Base User Journey/Views/HYButton.h"; sourceTree = "<group>"; };
 		D4A2E6451559379E0041DB66 /* HYButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYButton.m; path = "User Journey/Base User Journey/Views/HYButton.m"; sourceTree = "<group>"; };
 		D4A2E6461559379E0041DB66 /* HYLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYLabel.h; path = "User Journey/Base User Journey/Views/HYLabel.h"; sourceTree = "<group>"; };
@@ -1099,10 +1107,41 @@
 		D4FE9AEF169892AC003FBCED /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Reachability.m; path = Utility/Reachability.m; sourceTree = "<group>"; };
 		D4FE9AF1169892FD003FBCED /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		D4FE9AF31698EDEF003FBCED /* headerBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "headerBackground@2x.png"; path = "User Journey/Base User Journey/Assets/headerBackground@2x.png"; sourceTree = "<group>"; };
+		E52340FE1B4E7EF200A55A0A /* HYSignUpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYSignUpViewController.m; path = "User Journey/Base User Journey/View Controllers/HYSignUpViewController.m"; sourceTree = "<group>"; };
+		E52341001B4E7F2200A55A0A /* HYSignUpViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HYSignUpViewController.h; sourceTree = "<group>"; };
+		E5371C421B453E87002DF442 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		E53BF8711B623E3A00A4D783 /* HYHomeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYHomeViewController.h; sourceTree = "<group>"; };
+		E53BF8721B623E3A00A4D783 /* HYHomeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYHomeViewController.m; sourceTree = "<group>"; };
+		E53BF8741B623F6F00A4D783 /* HYBanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYBanner.h; sourceTree = "<group>"; };
+		E53BF8751B623F6F00A4D783 /* HYBanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYBanner.m; sourceTree = "<group>"; };
+		E544672C1B67B0B700B9100E /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
+		E544672E1B67B0BF00B9100E /* AddressBookUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBookUI.framework; path = System/Library/Frameworks/AddressBookUI.framework; sourceTree = SDKROOT; };
+		E550C8BA1B660D9300E53ED7 /* HYProductSearchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYProductSearchViewController.h; path = "User Journey/Base User Journey/View Controllers/HYProductSearchViewController.h"; sourceTree = "<group>"; };
+		E550C8BB1B660D9300E53ED7 /* HYProductSearchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYProductSearchViewController.m; path = "User Journey/Base User Journey/View Controllers/HYProductSearchViewController.m"; sourceTree = "<group>"; };
+		E57D23BF1B59284300CA2E1F /* HYLandingPageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYLandingPageViewController.h; sourceTree = "<group>"; };
+		E57D23C01B59284300CA2E1F /* HYLandingPageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYLandingPageViewController.m; sourceTree = "<group>"; };
+		E5890B521B57B5C7008C3188 /* iPhoneStoryboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = iPhoneStoryboard.storyboard; path = "User Journey/Base User Journey/Storyboards/iPhoneStoryboard.storyboard"; sourceTree = "<group>"; };
+		E58C3D801B42B91400E33666 /* NSData+IDZGunzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+IDZGunzip.h"; path = "Utility/NSData+IDZGunzip.h"; sourceTree = "<group>"; };
+		E58C3D811B42B91400E33666 /* NSData+IDZGunzip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+IDZGunzip.m"; path = "Utility/NSData+IDZGunzip.m"; sourceTree = "<group>"; };
+		E58C3D871B42D6A300E33666 /* NSData+Decompression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+Decompression.m"; path = "Utility/NSData+Decompression.m"; sourceTree = "<group>"; };
+		E58C3D891B4304E200E33666 /* NSData+DecodingBase64String.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+DecodingBase64String.h"; path = "Utility/NSData+DecodingBase64String.h"; sourceTree = "<group>"; };
+		E58C3D8A1B4304E200E33666 /* NSData+DecodingBase64String.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+DecodingBase64String.m"; path = "Utility/NSData+DecodingBase64String.m"; sourceTree = "<group>"; };
+		E58C3D931B442C0D00E33666 /* NSData+Decompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+Decompression.h"; path = "Utility/NSData+Decompression.h"; sourceTree = "<group>"; };
+		E58C3D981B44324000E33666 /* Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64.h; sourceTree = "<group>"; };
+		E58C3D991B44324000E33666 /* Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64.m; sourceTree = "<group>"; };
+		E58C3D9A1B44324000E33666 /* LICENCE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE.md; sourceTree = "<group>"; };
+		E58C3D9B1B44324000E33666 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		E58C3D9C1B44324000E33666 /* RELEASE NOTES.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "RELEASE NOTES.md"; sourceTree = "<group>"; };
+		E58C3DA11B4516AF00E33666 /* GZIP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GZIP.h; path = Utility/GZIP.h; sourceTree = "<group>"; };
+		E58C3DA21B4516AF00E33666 /* GZIP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GZIP.m; path = Utility/GZIP.m; sourceTree = "<group>"; };
+		E5988F8E1B57E96400098D35 /* HYLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYLoginViewController.m; path = "User Journey/Base User Journey/View Controllers/HYLoginViewController.m"; sourceTree = "<group>"; };
+		E5988F961B58D7FD00098D35 /* HYPageContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYPageContentViewController.h; sourceTree = "<group>"; };
+		E5988F971B58D7FE00098D35 /* HYPageContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYPageContentViewController.m; sourceTree = "<group>"; };
+		E5F3C6AE1B45988A00F4241F /* NSData+Based64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSData+Based64.h"; path = "Utility/NSData+Based64.h"; sourceTree = "<group>"; };
+		E5F3C6AF1B4598A600F4241F /* NSData+Based64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSData+Based64.m"; path = "Utility/NSData+Based64.m"; sourceTree = "<group>"; };
 		FE0B756E1573A668005DBFBC /* HYFacet+Factory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "HYFacet+Factory.h"; path = "Model/ManagedObjects/HYFacet+Factory.h"; sourceTree = "<group>"; };
 		FE0B756F1573A668005DBFBC /* HYFacet+Factory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "HYFacet+Factory.m"; path = "Model/ManagedObjects/HYFacet+Factory.m"; sourceTree = "<group>"; };
 		FE170EF915EE254D00774EE9 /* HYLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYLoginViewController.h; path = "User Journey/Base User Journey/View Controllers/HYLoginViewController.h"; sourceTree = "<group>"; };
-		FE170EFA15EE254D00774EE9 /* HYLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYLoginViewController.m; path = "User Journey/Base User Journey/View Controllers/HYLoginViewController.m"; sourceTree = "<group>"; };
 		FE170F0615EE836700774EE9 /* HYRegisterUserViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYRegisterUserViewController.h; path = "User Journey/Base User Journey/View Controllers/HYRegisterUserViewController.h"; sourceTree = "<group>"; };
 		FE170F0715EE836700774EE9 /* HYRegisterUserViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYRegisterUserViewController.m; path = "User Journey/Base User Journey/View Controllers/HYRegisterUserViewController.m"; sourceTree = "<group>"; };
 		FE1AD13816199ECA0016DEFE /* HYBasicCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HYBasicCell.xib; sourceTree = "<group>"; };
@@ -1189,11 +1228,6 @@
 		FEDB83C315F623BB00959B62 /* ModalViewControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModalViewControllerDelegate.h; sourceTree = "<group>"; };
 		FEDB83D715F6642200959B62 /* HYInfoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HYInfoViewController.h; sourceTree = "<group>"; };
 		FEDB83D815F6642200959B62 /* HYInfoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HYInfoViewController.m; sourceTree = "<group>"; };
-		FEDC524C1846505B003F2FFA /* Base64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64.h; sourceTree = "<group>"; };
-		FEDC524D1846505B003F2FFA /* Base64.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64.m; sourceTree = "<group>"; };
-		FEDC524E1846505B003F2FFA /* LICENCE.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE.md; sourceTree = "<group>"; };
-		FEDC524F1846505B003F2FFA /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
-		FEDC52501846505B003F2FFA /* RELEASE NOTES.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "RELEASE NOTES.md"; sourceTree = "<group>"; };
 		FEDC8A8815F7B61900E8223E /* FormViewControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormViewControllerDelegate.h; sourceTree = "<group>"; };
 		FEDC8A8A15F8A0C100E8223E /* HYCheckoutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HYCheckoutViewController.h; path = "User Journey/Base User Journey/View Controllers/HYCheckoutViewController.h"; sourceTree = "<group>"; };
 		FEDC8A8B15F8A0C100E8223E /* HYCheckoutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HYCheckoutViewController.m; path = "User Journey/Base User Journey/View Controllers/HYCheckoutViewController.m"; sourceTree = "<group>"; };
@@ -1245,12 +1279,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E544672F1B67B0BF00B9100E /* AddressBookUI.framework in Frameworks */,
+				E544672D1B67B0B700B9100E /* AddressBook.framework in Frameworks */,
+				D4A2E5B81552E80A0041DB66 /* CoreGraphics.framework in Frameworks */,
+				E5371C431B453E87002DF442 /* MobileCoreServices.framework in Frameworks */,
+				D4FE9AF2169892FD003FBCED /* SystemConfiguration.framework in Frameworks */,
+				D43A7225155AA1D300278386 /* CFNetwork.framework in Frameworks */,
+				C2BB427C178B4B8400CD551D /* libz.dylib in Frameworks */,
 				D4EBCC73158229D200F0D5DB /* ImageIO.framework in Frameworks */,
 				C2BB427E178B4BAF00CD551D /* AudioToolbox.framework in Frameworks */,
 				7F516A3B1663CDAF0041127B /* CoreVideo.framework in Frameworks */,
-				C2BB427C178B4B8400CD551D /* libz.dylib in Frameworks */,
 				7F516A3D1663CDBE0041127B /* libiconv.dylib in Frameworks */,
-				D4FE9AF2169892FD003FBCED /* SystemConfiguration.framework in Frameworks */,
 				7F59943C166921DA0048232B /* MapKit.framework in Frameworks */,
 				D43A7223155AA18600278386 /* CoreLocation.framework in Frameworks */,
 				FE1E1A531624377C006B759D /* QuartzCore.framework in Frameworks */,
@@ -1261,12 +1300,10 @@
 				D49E831916637A6A00911B54 /* Social.framework in Frameworks */,
 				D42485F4162489F300B84C68 /* CoreText.framework in Frameworks */,
 				D4969F14158B7229007D5EC3 /* MessageUI.framework in Frameworks */,
-				D43A7225155AA1D300278386 /* CFNetwork.framework in Frameworks */,
 				D43A7221155AA17600278386 /* libsqlite3.0.dylib in Frameworks */,
 				C2B4179D17B137EE00F920CA /* HockeySDK.framework in Frameworks */,
 				D4A2E5B41552E80A0041DB66 /* UIKit.framework in Frameworks */,
 				D4A2E5B61552E80A0041DB66 /* Foundation.framework in Frameworks */,
-				D4A2E5B81552E80A0041DB66 /* CoreGraphics.framework in Frameworks */,
 				D4A2E5BA1552E80A0041DB66 /* CoreData.framework in Frameworks */,
 				C237886E17B15BBB00A2F68C /* FacebookSDK.framework in Frameworks */,
 				D447CA88160B2396009D54B8 /* Twitter.framework in Frameworks */,
@@ -1450,7 +1487,7 @@
 		D43A720D155A9DB000278386 /* Lib */ = {
 			isa = PBXGroup;
 			children = (
-				FEDC524B1846505B003F2FFA /* Base64 */,
+				E58C3D971B44324000E33666 /* Base64 */,
 				C237886A17B15BBB00A2F68C /* FacebookSDK */,
 				C2B4179117B137EE00F920CA /* HockeySDK-iOS */,
 				D4969E62158B707A007D5EC3 /* InAppSettingsKit */,
@@ -1643,6 +1680,9 @@
 		D4A2E5B21552E80A0041DB66 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E544672E1B67B0BF00B9100E /* AddressBookUI.framework */,
+				E544672C1B67B0B700B9100E /* AddressBook.framework */,
+				E5371C421B453E87002DF442 /* MobileCoreServices.framework */,
 				C27471A517B1230500E593B5 /* HockeySDK.embeddedframework */,
 				C2BB427D178B4BAE00CD551D /* AudioToolbox.framework */,
 				D49E831416637A6A00911B54 /* Accounts.framework */,
@@ -1699,7 +1739,7 @@
 				D4A2E5C11552E80B0041DB66 /* main.m */,
 				D4A2E5C31552E80B0041DB66 /* Hybris-Prefix.pch */,
 				D4A426ED156BDD0100BA6843 /* settings.plist */,
-				D49CBB59164D7A9000841AC3 /* categories.electronics.plist */,
+				D49CBB59164D7A9000841AC3 /* categories.croma_retail_shop.plist */,
 				C21EEB9E16DE8E930000FE44 /* categories.apparel-uk.plist */,
 				D4969DFC158A41E2007D5EC3 /* Settings.bundle */,
 			);
@@ -1757,6 +1797,8 @@
 		D4A2E5F11553DF530041DB66 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				E550C8B91B660D5700E53ED7 /* Product Search Classes */,
+				E5988F8A1B57E85500098D35 /* Landing Classes */,
 				7F59940E1667687B0048232B /* Store Locator Classes */,
 				D491AE9416147E7800C9D673 /* Browsing */,
 				FEDC8A8915F89CE200E8223E /* Account Classes */,
@@ -1850,7 +1892,7 @@
 		D4A2E631155930480041DB66 /* Storyboards */ = {
 			isa = PBXGroup;
 			children = (
-				D4A2E63A1559377D0041DB66 /* iPhoneStoryboard.storyboard */,
+				E5890B521B57B5C7008C3188 /* iPhoneStoryboard.storyboard */,
 			);
 			name = Storyboards;
 			sourceTree = "<group>";
@@ -1945,6 +1987,13 @@
 		D4A2E68215593C460041DB66 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				E5F3C6AF1B4598A600F4241F /* NSData+Based64.m */,
+				E5F3C6AE1B45988A00F4241F /* NSData+Based64.h */,
+				E58C3DA11B4516AF00E33666 /* GZIP.h */,
+				E58C3DA21B4516AF00E33666 /* GZIP.m */,
+				E58C3D931B442C0D00E33666 /* NSData+Decompression.h */,
+				E58C3D801B42B91400E33666 /* NSData+IDZGunzip.h */,
+				E58C3D811B42B91400E33666 /* NSData+IDZGunzip.m */,
 				D4A2E68E15594D010041DB66 /* Categories */,
 				FEE96E6C1577956F005F1433 /* HYBlockAdditions.h */,
 				D43A7227155AA7BB00278386 /* Hybris.h */,
@@ -1956,6 +2005,9 @@
 				D4A2E68715593D030041DB66 /* README */,
 				FE87A17015FA317200CA045C /* UIViewController+WaitView.h */,
 				FE87A17115FA317200CA045C /* UIViewController+WaitView.m */,
+				E58C3D871B42D6A300E33666 /* NSData+Decompression.m */,
+				E58C3D891B4304E200E33666 /* NSData+DecodingBase64String.h */,
+				E58C3D8A1B4304E200E33666 /* NSData+DecodingBase64String.m */,
 			);
 			name = Utility;
 			sourceTree = "<group>";
@@ -2187,6 +2239,41 @@
 			name = iPad;
 			sourceTree = "<group>";
 		};
+		E550C8B91B660D5700E53ED7 /* Product Search Classes */ = {
+			isa = PBXGroup;
+			children = (
+				E550C8BA1B660D9300E53ED7 /* HYProductSearchViewController.h */,
+				E550C8BB1B660D9300E53ED7 /* HYProductSearchViewController.m */,
+			);
+			name = "Product Search Classes";
+			sourceTree = "<group>";
+		};
+		E58C3D971B44324000E33666 /* Base64 */ = {
+			isa = PBXGroup;
+			children = (
+				E58C3D981B44324000E33666 /* Base64.h */,
+				E58C3D991B44324000E33666 /* Base64.m */,
+				E58C3D9A1B44324000E33666 /* LICENCE.md */,
+				E58C3D9B1B44324000E33666 /* README.md */,
+				E58C3D9C1B44324000E33666 /* RELEASE NOTES.md */,
+			);
+			path = Base64;
+			sourceTree = "<group>";
+		};
+		E5988F8A1B57E85500098D35 /* Landing Classes */ = {
+			isa = PBXGroup;
+			children = (
+				E5988F961B58D7FD00098D35 /* HYPageContentViewController.h */,
+				E5988F971B58D7FE00098D35 /* HYPageContentViewController.m */,
+				E57D23BF1B59284300CA2E1F /* HYLandingPageViewController.h */,
+				E57D23C01B59284300CA2E1F /* HYLandingPageViewController.m */,
+				E53BF8711B623E3A00A4D783 /* HYHomeViewController.h */,
+				E53BF8721B623E3A00A4D783 /* HYHomeViewController.m */,
+			);
+			name = "Landing Classes";
+			path = "User Journey/Base User Journey/View Controllers/Landing Classes";
+			sourceTree = "<group>";
+		};
 		FE3BD1D615E63D720023575C /* Custom Objects */ = {
 			isa = PBXGroup;
 			children = (
@@ -2237,6 +2324,8 @@
 				D4F13079161C4B75008A013D /* HYObject.m */,
 				7F59941D166775A10048232B /* HYStoreSearchObject.h */,
 				7F59941E166775A10048232B /* HYStoreSearchObject.m */,
+				E53BF8741B623F6F00A4D783 /* HYBanner.h */,
+				E53BF8751B623F6F00A4D783 /* HYBanner.m */,
 			);
 			name = "Custom Objects";
 			sourceTree = "<group>";
@@ -2305,21 +2394,10 @@
 			path = "User Journey/Base User Journey/View Controllers/Base Classes";
 			sourceTree = "<group>";
 		};
-		FEDC524B1846505B003F2FFA /* Base64 */ = {
-			isa = PBXGroup;
-			children = (
-				FEDC524C1846505B003F2FFA /* Base64.h */,
-				FEDC524D1846505B003F2FFA /* Base64.m */,
-				FEDC524E1846505B003F2FFA /* LICENCE.md */,
-				FEDC524F1846505B003F2FFA /* README.md */,
-				FEDC52501846505B003F2FFA /* RELEASE NOTES.md */,
-			);
-			path = Base64;
-			sourceTree = "<group>";
-		};
 		FEDC8A8915F89CE200E8223E /* Account Classes */ = {
 			isa = PBXGroup;
 			children = (
+				E5988F8E1B57E96400098D35 /* HYLoginViewController.m */,
 				FEDC8A8D15F8A59400E8223E /* HYAddressDetailViewController.h */,
 				FEDC8A8E15F8A59500E8223E /* HYAddressDetailViewController.m */,
 				FE87A17F15FA516000CA045C /* HYAddressListViewController.h */,
@@ -2333,7 +2411,6 @@
 				D4B262FA1614BCDD00A13201 /* HYLanguagesListViewController.h */,
 				D4B262FB1614BCDD00A13201 /* HYLanguagesListViewController.m */,
 				FE170EF915EE254D00774EE9 /* HYLoginViewController.h */,
-				FE170EFA15EE254D00774EE9 /* HYLoginViewController.m */,
 				FE5E248C1615E82C002D8704 /* HYOrderDetailViewController.h */,
 				FE5E248D1615E82C002D8704 /* HYOrderDetailViewController.m */,
 				FE58016E161099E0007B0BD6 /* HYOrderListViewController.h */,
@@ -2348,6 +2425,8 @@
 				FED7BD43160B1C37000FCCB0 /* HYProfileViewController.m */,
 				FE170F0615EE836700774EE9 /* HYRegisterUserViewController.h */,
 				FE170F0715EE836700774EE9 /* HYRegisterUserViewController.m */,
+				E52340FE1B4E7EF200A55A0A /* HYSignUpViewController.m */,
+				E52341001B4E7F2200A55A0A /* HYSignUpViewController.h */,
 			);
 			name = "Account Classes";
 			sourceTree = "<group>";
@@ -2412,7 +2491,7 @@
 			name = HybrisTests;
 			productName = HybrisTests;
 			productReference = D4A2E5CF1552E80B0041DB66 /* HybrisTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productType = "com.apple.product-type.bundle.ocunit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -2455,12 +2534,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4A2E5C01552E80B0041DB66 /* InfoPlist.strings in Resources */,
-				D4A2E6921559501A0041DB66 /* iPhoneStoryboard.storyboard in Resources */,
 				D4A426EE156BDD0100BA6843 /* settings.plist in Resources */,
 				D4ACAE2D1577903C00791495 /* Default@2x.png in Resources */,
 				D4ACAE3B1577937100791495 /* Icon.png in Resources */,
 				D4ACAE3D1577937100791495 /* Icon@2x.png in Resources */,
-				D49CBB57164D7A9000841AC3 /* categories.electronics.plist in Resources */,
+				D49CBB57164D7A9000841AC3 /* categories.croma_retail_shop.plist in Resources */,
 				D4969DFD158A41E2007D5EC3 /* Settings.bundle in Resources */,
 				D4969E9F158B707A007D5EC3 /* IASKAppSettingsView.xib in Resources */,
 				D4969EA0158B707A007D5EC3 /* IASKAppSettingsWebView.xib in Resources */,
@@ -2498,21 +2576,20 @@
 				D447CA9E160B54D8009D54B8 /* action-mail@2x.png in Resources */,
 				D447CAA0160B54D8009D54B8 /* action-twitter@2x.png in Resources */,
 				D47B48C61610918800F62BEA /* Default-568h@2x.png in Resources */,
-				FEDC52521846505B003F2FFA /* LICENCE.md in Resources */,
 				D4F661F71615F8D5009BB3EA /* HYProductImageTile.xib in Resources */,
 				FE1AD13F1619F0A10016DEFE /* HYBasicCell.xib in Resources */,
 				D49CBB64164D7B4400841AC3 /* ChangePassword.plist in Resources */,
+				E5890B531B57B5C7008C3188 /* iPhoneStoryboard.storyboard in Resources */,
 				D49CBB67164D7B4900841AC3 /* Profile.plist in Resources */,
 				D4AFE059162EEDCA0015ADFD /* disclosure-on@2x.png in Resources */,
 				D4AFE05A162EEDCA0015ADFD /* disclosure@2x.png in Resources */,
-				FEDC52541846505B003F2FFA /* RELEASE NOTES.md in Resources */,
 				7FDA39201652613900BDDD2A /* HYPickerControl.xib in Resources */,
 				7F516A5A166523450041127B /* scan-white@2x.png in Resources */,
 				7F516A60166523620041127B /* scan-green@2x.png in Resources */,
 				7F516A62166523620041127B /* scan-red@2x.png in Resources */,
-				FEDC52531846505B003F2FFA /* README.md in Resources */,
 				7F599418166769C40048232B /* location-button@2x.png in Resources */,
 				7F59941C166769DD0048232B /* search-bar@2x.png in Resources */,
+				E58C3D9E1B44324000E33666 /* LICENCE.md in Resources */,
 				7FD7C2FE166E0EE70054B9E1 /* filter-divider@2x.png in Resources */,
 				7FD7C301166E0EF90054B9E1 /* arrow-right.png in Resources */,
 				7FD7C302166E0EF90054B9E1 /* arrow-right@2x.png in Resources */,
@@ -2522,6 +2599,7 @@
 				7FA0582D16725691006C923E /* filter-text-tick@2x.png in Resources */,
 				7F84CB901676046300CE73E1 /* tabbar-background.png in Resources */,
 				7F84CB9716763A9E00CE73E1 /* 187-pencil.png in Resources */,
+				E58C3D9F1B44324000E33666 /* README.md in Resources */,
 				7F84CB9816763A9E00CE73E1 /* 187-pencil@2x.png in Resources */,
 				7F84CB9B1677702900CE73E1 /* digital-camera-banner@2x.png in Resources */,
 				D4E435B116832F9600AD4AC7 /* searchbar-background@2x.png in Resources */,
@@ -2542,6 +2620,7 @@
 				D460167316A6AFDD005AB2FA /* tab-stores@2x.png in Resources */,
 				D4C05D2216A6C2AE009E4CA8 /* phoneBackground@2x.png in Resources */,
 				D4C51FDD16A6FA2D006B0DB4 /* mapBackground@2x.png in Resources */,
+				E58C3DA01B44324000E33666 /* RELEASE NOTES.md in Resources */,
 				C26307AC16F0BC3D00F8B9D0 /* ChangeLogin.plist in Resources */,
 				C2AE5B0216DD099A003BBFC7 /* variants-button@2x.png in Resources */,
 				C2AE5B0416DD3AF4003BBFC7 /* add-to-cart_disabled@2x.png in Resources */,
@@ -2569,12 +2648,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				aa5f6c5f1477ffaed6fc7f1e /* InfoPlist.strings in Resources */,
-				8cf121f30dce5dfe5693a560 /* iPhoneStoryboard.storyboard in Resources */,
 				db1a8f355802f9bf6bad9535 /* settings.plist in Resources */,
 				3c43872c8188c916ad441a6a /* Default@2x.png in Resources */,
 				2f9d0abdfdaf3ebf4468c513 /* Icon.png in Resources */,
 				b6661196a5f16ff1c22c2020 /* Icon@2x.png in Resources */,
-				ff9bc33b17846151f5a36757 /* categories.electronics.plist in Resources */,
+				ff9bc33b17846151f5a36757 /* categories.croma_retail_shop.plist in Resources */,
 				241f25e33b8cfb5f78dcf7e0 /* Settings.bundle in Resources */,
 				1b05940bbc2f423f2cd4f943 /* IASKAppSettingsView.xib in Resources */,
 				c3a9d140087b66b041790d38 /* IASKAppSettingsWebView.xib in Resources */,
@@ -2612,19 +2690,16 @@
 				d0cbc48c5f47a6c83bd031a3 /* action-mail@2x.png in Resources */,
 				1c0125b836232ac4803ff1dd /* action-twitter@2x.png in Resources */,
 				38403c2d08afde93e722b007 /* Default-568h@2x.png in Resources */,
-				2e356b1576af996419459e7e /* LICENCE.md in Resources */,
 				66c539584afc811b9c3f18be /* HYProductImageTile.xib in Resources */,
 				c790d96f05b12ec76ef029ea /* HYBasicCell.xib in Resources */,
 				355d2aecdc598badad4a7ae3 /* ChangePassword.plist in Resources */,
 				b070673e5beec5ebc370099c /* Profile.plist in Resources */,
 				3c9447288b64428b8527428c /* disclosure-on@2x.png in Resources */,
 				d83538cbd39ebb49d4952452 /* disclosure@2x.png in Resources */,
-				9d095609b8a169ae1b144692 /* RELEASE NOTES.md in Resources */,
 				22d0a683ccd91a32153dca7c /* HYPickerControl.xib in Resources */,
 				c378421bd11c989a02a8e082 /* scan-white@2x.png in Resources */,
 				bdf22ba92d7e78fd3ee3c148 /* scan-green@2x.png in Resources */,
 				6db964dd5dad45cb61f8e465 /* scan-red@2x.png in Resources */,
-				be040926c5aab1bb7c65cc26 /* README.md in Resources */,
 				504f9f4e2b47af318c837305 /* location-button@2x.png in Resources */,
 				939f8efbfa4f4f903f01e8e8 /* search-bar@2x.png in Resources */,
 				0d4cf07ce97f8e6deb1e240f /* filter-divider@2x.png in Resources */,
@@ -2807,7 +2882,6 @@
 				3a671fff5a0a87079dfbfd9a /* IASKSettingsReader.m in Sources */,
 				1f8897c62eb356ced21ac16e /* IASKSettingsStore.m in Sources */,
 				c5c5b6fd102b9501690ca8e7 /* IASKSettingsStoreFile.m in Sources */,
-				50c08c2b0159e969c8571566 /* Base64.m in Sources */,
 				fd9eee2a042cce9b4aba4d3d /* IASKSettingsStoreUserDefaults.m in Sources */,
 				0f286a5dcf1bfa5e178306ee /* IASKSpecifier.m in Sources */,
 				c31e46749f13e1250805be46 /* IASKAppSettingsViewController.m in Sources */,
@@ -2844,7 +2918,6 @@
 				0491dec45f2f8d7dfe57d261 /* HYSearchResultsHeaderView.m in Sources */,
 				32d325de01ea0674b8d22c0b /* HYDidYouMean.m in Sources */,
 				2ce68d239b7ecb477c025302 /* HYDidYouMean+Factory.m in Sources */,
-				297fa0691c9f8a39eb9931c3 /* HYLoginViewController.m in Sources */,
 				8b315bc35f3042a189f0e5bb /* HYExtendedFooterView.m in Sources */,
 				831fae2a14f7198a3b963e81 /* HYRegisterUserViewController.m in Sources */,
 				68b53c70632408bd2ff2c58d /* HYProductNameCell.m in Sources */,
@@ -2958,6 +3031,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E52341011B4E881B00A55A0A /* HYSignUpViewController.h in Sources */,
 				D4A2E5C21552E80B0041DB66 /* main.m in Sources */,
 				D4A2E5C61552E80B0041DB66 /* HYAppDelegate.m in Sources */,
 				D4A2E626155928650041DB66 /* HYApplication.m in Sources */,
@@ -2981,6 +3055,7 @@
 				D42C012E1588D84400C950F7 /* HYProgressView.m in Sources */,
 				C274719317B0414200E593B5 /* MWTapDetectingView.m in Sources */,
 				D4969DF01589E90F007D5EC3 /* HYSearchBar.m in Sources */,
+				E52340FF1B4E7EF300A55A0A /* HYSignUpViewController.m in Sources */,
 				FE903FB4158B62570039DC05 /* HYSectionHeader.m in Sources */,
 				D40EDB94158B761600A2109E /* IASKPSSliderSpecifierViewCell.m in Sources */,
 				D40EDB95158B761600A2109E /* IASKPSTextFieldSpecifierViewCell.m in Sources */,
@@ -2993,10 +3068,11 @@
 				D40EDB9B158B762400A2109E /* IASKSettingsReader.m in Sources */,
 				D40EDB9C158B762400A2109E /* IASKSettingsStore.m in Sources */,
 				D40EDB9D158B762400A2109E /* IASKSettingsStoreFile.m in Sources */,
-				FEDC52511846505B003F2FFA /* Base64.m in Sources */,
 				D40EDB9E158B762400A2109E /* IASKSettingsStoreUserDefaults.m in Sources */,
+				E57D23C11B59284300CA2E1F /* HYLandingPageViewController.m in Sources */,
 				D40EDB9F158B762400A2109E /* IASKSpecifier.m in Sources */,
 				D40EDBA0158B762B00A2109E /* IASKAppSettingsViewController.m in Sources */,
+				E5988F981B58D7FE00098D35 /* HYPageContentViewController.m in Sources */,
 				D40EDBA1158B762B00A2109E /* IASKAppSettingsWebViewController.m in Sources */,
 				D40EDBA2158B762B00A2109E /* IASKSpecifierValuesViewController.m in Sources */,
 				FE4996221593374200289420 /* HYStartUpViewController.m in Sources */,
@@ -3030,11 +3106,11 @@
 				D4651A1E15ECFD4E004A0F43 /* HYSearchResultsHeaderView.m in Sources */,
 				D4651A2A15ED144A004A0F43 /* HYDidYouMean.m in Sources */,
 				D4651A2D15ED1491004A0F43 /* HYDidYouMean+Factory.m in Sources */,
-				FE170EFB15EE254D00774EE9 /* HYLoginViewController.m in Sources */,
 				D4F6534615EE412E00393AE2 /* HYExtendedFooterView.m in Sources */,
 				FE170F0815EE836800774EE9 /* HYRegisterUserViewController.m in Sources */,
 				D4F6535915EE883200393AE2 /* HYProductNameCell.m in Sources */,
 				D4F6535B15EE883600393AE2 /* HYProductImageCell.m in Sources */,
+				E5F3C6B01B4598A600F4241F /* NSData+Based64.m in Sources */,
 				D4F6535C15EE883900393AE2 /* HYProductPriceCell.m in Sources */,
 				D4F6535D15EE883B00393AE2 /* HYProductAddCell.m in Sources */,
 				D4F6536015EF692E00393AE2 /* HYProductDescriptionCell.m in Sources */,
@@ -3051,12 +3127,14 @@
 				FEE40F0315FE3DFB00D9DA6A /* HYPaymentListViewController.m in Sources */,
 				FEE40F0615FE4B2F00D9DA6A /* HYPaymentDetailViewController.m in Sources */,
 				FEF30AEE160727E400FC1990 /* NSObject+PerformBlock.m in Sources */,
+				E58C3D881B42D6A300E33666 /* NSData+Decompression.m in Sources */,
 				D4A5D26D16088A6F00C3C305 /* UIView+FindAndResignFirstResponder.m in Sources */,
 				D4A5D27316088A9100C3C305 /* HYFormViewController.m in Sources */,
 				D4A5D27416088A9100C3C305 /* HYPickerViewController.m in Sources */,
 				D4A5D27B16088AAC00C3C305 /* HYFormSwitchCell.m in Sources */,
 				D4A5D27C16088AAC00C3C305 /* HYFormTextEntryCell.m in Sources */,
 				C274719417B0414200E593B5 /* MWZoomingScrollView.m in Sources */,
+				E53BF8731B623E3A00A4D783 /* HYHomeViewController.m in Sources */,
 				D4A5D27D16088AAC00C3C305 /* HYFormTextSelectionCell.m in Sources */,
 				D4E360171609DB3500FF24CA /* HYProductClassificationsCell.m in Sources */,
 				D4E3601F1609E70200FF24CA /* HYProductClassificationView.m in Sources */,
@@ -3091,11 +3169,13 @@
 				D4F661E51615DD1B009BB3EA /* HYCurrencyListViewController.m in Sources */,
 				FE5E248E1615E82C002D8704 /* HYOrderDetailViewController.m in Sources */,
 				D4F661EF1615F8C9009BB3EA /* HYScrollingTileBar.m in Sources */,
+				E550C8BC1B660D9300E53ED7 /* HYProductSearchViewController.m in Sources */,
 				D4F661F01615F8C9009BB3EA /* HYScrollingTileBarTile.m in Sources */,
 				D4F661FA1615FAD1009BB3EA /* ScrollingTileBar.m in Sources */,
 				D4F661FD1615FB13009BB3EA /* ScrollingTileBarTileFactory.m in Sources */,
 				D40FA329161AF32E00AEBFA9 /* ZZPageControl.m in Sources */,
 				D40FA32E161AF37800AEBFA9 /* MBProgressHUD.m in Sources */,
+				E58C3DA31B4516AF00E33666 /* GZIP.m in Sources */,
 				FE1AD148161B04B40016DEFE /* HYProductOrderCell.m in Sources */,
 				C274719217B0414200E593B5 /* MWTapDetectingImageView.m in Sources */,
 				FED1BF2D161DA5BF00E482A8 /* HYChangePasswordViewController.m in Sources */,
@@ -3121,18 +3201,23 @@
 				7FA05830167258D9006C923E /* HYCheckoutSectionHeader.m in Sources */,
 				7F84CB9E1677978800CE73E1 /* HYCheckoutSummaryCell.m in Sources */,
 				7FD863821683738700A59073 /* HYCheckoutDetailsCell.m in Sources */,
+				E5988F8F1B57E96400098D35 /* HYLoginViewController.m in Sources */,
 				7FCB83801684BAFA00CB06D0 /* HYCheckoutNormalCell.m in Sources */,
 				D4C05D2416A6C986009E4CA8 /* HYButton.m in Sources */,
 				D4C51FDF16A70658006B0DB4 /* Reachability.m in Sources */,
 				D4A28FEB16BADEE700E6895B /* HYChangeEmailViewController.m in Sources */,
 				C24F763716D6A67F00A034C4 /* NSObject+SafeSet.m in Sources */,
+				E58C3D8B1B4304E200E33666 /* NSData+DecodingBase64String.m in Sources */,
 				C29B500E16E6A2A900F571B2 /* HYShopTableViewController.m in Sources */,
 				C2881EAC16F7B38800243ECC /* HYOrderListCell.m in Sources */,
 				C24B226817047AAE0095F203 /* HYBasicAttributedCell.m in Sources */,
 				D4C02BCB17A6D79C00817A72 /* HYLinkURLSchemeController.m in Sources */,
 				D4C02BCC17A6D79C00817A72 /* HYOrderURLSchemeController.m in Sources */,
+				E58C3D9D1B44324000E33666 /* Base64.m in Sources */,
 				D4C02BCD17A6D79C00817A72 /* HYProductIDURLSchemeController.m in Sources */,
 				D4C02BCE17A6D79C00817A72 /* HYProductURLSchemeController.m in Sources */,
+				E53BF8761B623F6F00A4D783 /* HYBanner.m in Sources */,
+				E58C3D821B42B91400E33666 /* NSData+IDZGunzip.m in Sources */,
 				D4C02BCF17A6D79C00817A72 /* HYStoreURLSchemeController.m in Sources */,
 				D4C02BD017A6D79C00817A72 /* HYURLSchemeController.m in Sources */,
 				D4C02BD117A6D79C00817A72 /* HYURLSchemeControllerError.m in Sources */,
@@ -3188,13 +3273,13 @@
 			name = ChangeLogin.plist;
 			sourceTree = "<group>";
 		};
-		D49CBB59164D7A9000841AC3 /* categories.electronics.plist */ = {
+		D49CBB59164D7A9000841AC3 /* categories.croma_retail_shop.plist */ = {
 			isa = PBXVariantGroup;
 			children = (
 				D49CBB58164D7A9000841AC3 /* en */,
 				D49CBB5A164D7A9800841AC3 /* de */,
 			);
-			name = categories.electronics.plist;
+			name = categories.croma_retail_shop.plist;
 			sourceTree = "<group>";
 		};
 		D49CBB5D164D7B3200841AC3 /* Address.plist */ = {

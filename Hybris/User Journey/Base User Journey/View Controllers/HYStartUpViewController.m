@@ -26,7 +26,12 @@
             [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
 
             [self.activityIndicator stopAnimating];
-            [self performSegueWithIdentifier:@"startupSegue" sender:self];
+           // [self performSegueWithIdentifier:@"loginSegue" sender:self];
+            UIStoryboard *sb = [UIStoryboard storyboardWithName:@"iPhoneStoryboard" bundle:nil];
+            
+            UIViewController *vcc = [sb instantiateViewControllerWithIdentifier:@"loginSegue"];
+            [self.navigationController pushViewController:vcc animated:YES];
+
         }
         else {
             logInfo(@"Categories not ready yet.");
@@ -63,7 +68,7 @@
         [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
 
         [self.activityIndicator stopAnimating];
-        [self performSegueWithIdentifier:@"startupSegue" sender:self];
+        [self performSegueWithIdentifier:@"loginSegue" sender:self];
     }
 }
 

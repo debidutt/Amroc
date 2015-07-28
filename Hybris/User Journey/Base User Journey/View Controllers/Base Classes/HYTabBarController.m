@@ -20,6 +20,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    NSLog(@"I am in HYTabBarController Screen");
+    
     //Set the tabbar strings   
     [[self.viewControllers objectAtIndex:0] setTitle:NSLocalizedStringWithDefaultValue(@"Shop", nil, [NSBundle mainBundle], @"Shop", @"Home tab title")];
     [[self.viewControllers objectAtIndex:1] setTitle:NSLocalizedStringWithDefaultValue(@"Account", nil, [NSBundle mainBundle], @"Account", @"Account tab title")];;

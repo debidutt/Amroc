@@ -25,14 +25,14 @@
 				<string>https://mapi.hybris.com:9002</string>
 				<string>https://earlybird.hybris.com:9002</string>
 				<string>http://46.137.96.43:9001</string>
-				<string>http://10.10.5.41:9002</string>
+				<string>https://10.10.5.41:9002</string>
 			</array>
 			<key>AutocapitalizationType</key>
 			<string>None</string>
 			<key>AutocorrectionType</key>
 			<string>No</string>
 			<key>DefaultValue</key>
-			<string>http://10.10.5.41:9002</string>
+			<string>https://14.140.248.166</string>
 			<key>IsSecure</key>
 			<false/>
 			<key>Key</key>
@@ -107,18 +107,18 @@
 		<dict>
 			<key>Titles</key>
 			<array>
-				<string>USD</string>
+				<string>INR</string>
 			</array>
 			<key>Values</key>
 			<array>
-				<string>USD</string>
+				<string>INR</string>
 			</array>
 			<key>AutocapitalizationType</key>
 			<string>None</string>
 			<key>AutocorrectionType</key>
 			<string>No</string>
 			<key>DefaultValue</key>
-			<string>USD</string>
+			<string>INR</string>
 			<key>IsSecure</key>
 			<false/>
 			<key>Key</key>
@@ -133,12 +133,12 @@
 		<dict>
 			<key>Titles</key>
 			<array>
-				<string>electronics</string>
+				<string>croma_retail_shop/</string>
 				<string>apparel-uk</string>
 			</array>
 			<key>Values</key>
 			<array>
-				<string>electronics/</string>
+				<string>croma_retail_shop/</string>
 				<string>apparel-uk/</string>
 			</array>
 			<key>AutocapitalizationType</key>
@@ -146,7 +146,7 @@
 			<key>AutocorrectionType</key>
 			<string>No</string>
 			<key>DefaultValue</key>
-			<string>electronics/</string>
+			<string>croma_retail_shop/</string>
 			<key>IsSecure</key>
 			<false/>
 			<key>Key</key>

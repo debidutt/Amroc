@@ -83,6 +83,7 @@
     }
 
     self.filterButton.enabled = NO;
+    
     [[HYWebService shared] products:self.query completionBlock:^(NSDictionary *results, NSError *error) {
         
             NSMutableArray *categories = [NSMutableArray array];

@@ -174,9 +174,9 @@ typedef enum {
 
 
 - (void)displayResultsWithDictionary:(NSDictionary *)dict {
-    NSArray *variants = [dict valueForKeyPath:@"stores"];
-    self.totalPage = [[dict valueForKeyPath:@"pagination.totalPages"] integerValue];    
-    NSInteger totalResuls = [[dict valueForKeyPath:@"pagination.totalResults"] integerValue];    
+    NSArray *variants = [dict valueForKeyPath:@"results"];
+    self.totalPage = [[dict valueForKeyPath:@"pagination.pageSize"] integerValue];    
+    NSInteger totalResuls = [[dict valueForKeyPath:@"pagination.totalNumberOfResults"] integerValue];
     NSString *labelString = [NSString stringWithFormat:NSLocalizedStringWithDefaultValue(@"n total results", nil, [NSBundle mainBundle], @"%1$i total results",
                                                                                @"Completed count of results (plural)"),totalResuls];
     self.searchHeaderView.label.text = labelString;    
@@ -225,15 +225,21 @@ typedef enum {
                 }
                 
                 //Get the features
-                NSArray *storeFeaturesArray = [storeDictionary objectForKey:@"features"];
+              //  NSArray *storeFeaturesArray = [storeDictionary objectForKey:@"features"];
                 NSMutableArray *featuresArray = [NSMutableArray array];
-                for (NSDictionary *features in storeFeaturesArray) {
-                    [featuresArray addObject:[features objectForKey:@"value"]];
-                }
+                //for (NSDictionary *features in storeFeaturesArray) {
+                
+                    [featuresArray addObject:[storeDictionary valueForKeyPath:@"features.buyOnlinePickupInStore"]];
+                    [featuresArray addObject:[storeDictionary valueForKeyPath:@"features.creche"]];
+                    [featuresArray addObject:[storeDictionary valueForKeyPath:@"features.sundayWorkshops"]];
+                    [featuresArray addObject:[storeDictionary valueForKeyPath:@"features.wheelchair"]];
+                 
+                
+               // }
                 searchObject.features = featuresArray;
                 
                 //Get the times
-                NSArray *openingTimes = [[storeDictionary objectForKey:@"openingHours"] objectForKey:@"weekDays"];
+                NSArray *openingTimes = [[storeDictionary objectForKey:@"openingHours"] objectForKey:@"weekDayOpeningList"];   //weekDays
                 
                 NSArray *timesArray = [NSArray arrayWithArray:openingTimes];
                 
@@ -249,7 +255,7 @@ typedef enum {
                     }
                     
                     [hoursDictionary setObject:[timesDict objectForKey:@"closed"] forKey:@"openStatus"];
-                    [hoursDictionary setObject:[timesDict objectForKey:@"weekDay"] forKey:@"day"];
+                    [hoursDictionary setObject:[timesDict objectForKey:@"weekDay"]forKey:@"day"];
                     [searchObject.openingHours addObject:hoursDictionary];
                     hoursDictionary = nil;
                 }

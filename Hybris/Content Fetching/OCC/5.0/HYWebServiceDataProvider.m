@@ -13,6 +13,14 @@
 
 #import "HYWebServiceDataProvider.h"
 #import "HYWebServiceAuthProvider.h"
+#import "NSData+IDZGunzip.h"
+#import "NSData+Decompression.h"
+#import "NSData+DecodingBase64String.h"
+#import "Base64.h"
+#import "NSData+Based64.h"
+#import "GZIP.h"
+
+
 
 // Private interface
 @interface HYWebServiceDataProvider ()
@@ -22,6 +30,7 @@
 @property (nonatomic, strong) NSMutableURLRequest *currentRequest;
 @property (nonatomic, strong) NSMutableURLRequest *savedRequest;
 @property (assign) BOOL refreshedOnce;
+@property (assign) BOOL diffZipUnzip;
 
 - (id)initWithRequest:(NSMutableURLRequest *)request allowRefresh:(BOOL)allowRefresh completionBlock:(NSDataNSErrorBlock)completionBlock;
 - (id)initWithAuthorizedURL:(NSString *)url httpMethod:(NSString *)httpMethod httpBody:(NSData *)postData completionBlock:(NSDataNSErrorBlock)completionBlock;
@@ -73,19 +82,21 @@ long expectedContentLength;
             spacer = @"?";
         }
 
-        urlAsString = [NSString stringWithFormat:@"%@%@lang=%@",
-                                                 urlAsString,
-                                                 spacer,
-                                                 [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_language_preference"]];
+//        urlAsString = [NSString stringWithFormat:@"%@%@lang=%@",
+//                                                 urlAsString,
+//                                                 spacer,
+//                                                 [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_language_preference"]];
 
-//        urlAsString = [NSString stringWithFormat:@"%@%@lang=%@&curr=%@",
-//            urlAsString,
-//            spacer,
-//            [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_language_preference"],
-//            [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_currency_preference"]];
+        urlAsString = [NSString stringWithFormat:@"%@%@lang=%@&curr=%@",
+            urlAsString,
+            spacer,
+            [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_language_preference"],
+            @"INR"];
 
         request.URL = [NSURL URLWithString:urlAsString];
         logDebug(@"Requesting %@", request.URL);
+        
+        
 
 //        [request setValue:[NSString stringWithFormat:@"%@",
 //                           [[NSUserDefaults standardUserDefaults] valueForKey:@"web_services_language_preference"]] forHTTPHeaderField:@"Accept-Language"];
@@ -101,10 +112,12 @@ long expectedContentLength;
         _connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
 
         if (_connection) {
+            NSLog(@"######Connection Successfull");
             [[NSNotificationCenter defaultCenter] postNotificationName:HYConnectionStartedNotification object:nil];
             _data = [[NSMutableData alloc] init];
         }
         else {
+            NSLog(@"######Connection not Successfull");
             return nil;
         }
     }
@@ -141,6 +154,7 @@ long expectedContentLength;
         [NSMutableURLRequest requestWithURL:[self URLByEncodingString:url] cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:HYConnectionTimeout];
 
     [request setHTTPMethod:@"GET"];
+    
     return [self initWithRequest:request allowRefresh:YES completionBlock:completionBlock];
 }
 
@@ -345,10 +359,64 @@ long expectedContentLength;
 
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    logDebug(@"Data load complete.");
-    [[NSNotificationCenter defaultCenter] postNotificationName:HYConnectionStoppedNotification object:nil];
+   
+    logDebug(@"Data load complete. %@",self.data);
+ 
+    
+    NSString *newStr = [[NSString alloc] initWithData:self.data
+                                             encoding:NSUTF8StringEncoding];
+  
+    NSLog(@"new string %@",newStr);
+    
+    newStr = [newStr stringByReplacingOccurrencesOfString:@"["
+                                         withString:@""];
+    
+    newStr = [newStr stringByReplacingOccurrencesOfString:@"]"
+                                               withString:@""];
+    
+    newStr = [newStr stringByReplacingOccurrencesOfString:@"\\n"
+                                               withString:@""];
+    
+    newStr = [newStr stringByReplacingOccurrencesOfString:@"\""
+                                               withString:@""];
 
+    
+      NSData *nsData = [[NSData alloc]init];
+    
+      NSData *decodedGzippedData = [NSData dataFromBase64String:newStr];
+
+    
+        NSData* responseData = [[NSData alloc]init];
+    
+        NSLog(@"Response %@ ",newStr);
+        NSLog(@"Response Decoded %@ ",decodedGzippedData);
+    
+    NSData *result;
+    
+    @try
+    {
+        result = [responseData gzipInflate:decodedGzippedData];
+        NSLog(@"NSData is %@ %@",responseData,result);
+        NSError *jsonError;
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:&jsonError];
+        NSLog(@"ns dictionary %@",dict);
+        _diffZipUnzip = YES;
+    }
+    @catch (NSException *exception)
+    {
+        _diffZipUnzip = NO;
+        NSLog(@"%@ ",exception.name);
+        NSLog(@"Reason: %@ ",exception.reason);
+    }
+    @finally
+    {
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:HYConnectionStoppedNotification object:nil];
+    
     if (_completionDataBlock) {
+        
+        if (! _diffZipUnzip) {
+            
         if (self.data && self.data.length) {
             // Check for JSON parsing errors
             NSError *jsonError;
@@ -394,6 +462,58 @@ long expectedContentLength;
             dispatch_async (dispatch_queue_create ("com.hybris.parseData", NULL), ^{ _completionDataBlock (nil, nil);
                 });
         }
+        }else{
+        
+            if (result && result.length) {
+                // Check for JSON parsing errors
+                NSError *jsonError;
+                NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:&jsonError];
+                
+                if (jsonError) {
+                    [self debug:result];
+                    dispatch_async(dispatch_queue_create("com.hybris.parseData", NULL), ^{ _completionDataBlock (nil, jsonError);
+                    });
+                    return;
+                }
+                
+                // Check for invalid token
+                if ([self validateResponse:dict]) {
+                    dispatch_async(dispatch_queue_create("com.hybris.parseData", NULL), ^{ _completionDataBlock (result, nil);
+                    });
+                }
+                else {
+                    // If we've already tried to refresh, return an error
+                    if (self.refreshedOnce) {
+                        dispatch_async(dispatch_queue_create("com.hybris.parseData", NULL), ^{ _completionDataBlock (nil,
+                                                                                                                     [NSError errorWithDomain:@"com.hybris" code:1 userInfo:[NSDictionary dictionaryWithObject:@"Refresh Token Failed" forKey:
+                                                                                                                                                                             @"reason"]]);
+                        });
+                    }
+                    else {
+                        // Refresh the access token and re-run the request
+                        self.refreshedOnce = YES;
+                        [HYWebServiceAuthProvider refreshAccessTokenWithCompletionBlock:^(NSError* error) {
+                            if (error == nil) {
+                                [self reRunRequest];
+                            }
+                            else {
+                                dispatch_async (dispatch_queue_create ("com.hybris.parseData", NULL), ^{ _completionDataBlock (nil, error);
+                                });
+                            }
+                        }];
+                    }
+                }
+            }
+            // No data
+            else {
+                dispatch_async (dispatch_queue_create ("com.hybris.parseData", NULL), ^{ _completionDataBlock (nil, nil);
+                });
+            }
+
+            
+            
+        }
+    }
     }
 }
 

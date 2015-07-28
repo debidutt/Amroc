@@ -279,6 +279,13 @@ static void uncaughtExceptionHandler(NSException *exception);
         // Navigation bar buttons
         [[UIBarButtonItem appearance] setTintColor:[UIColor colorWithRed:39.0/255.0 green:53.0/255.0 blue:70.0/255.0 alpha:1.0]];
     }
+    
+    
+    UIPageControl *pageControl = [UIPageControl appearance];
+    pageControl.pageIndicatorTintColor = [UIColor lightGrayColor];
+    pageControl.currentPageIndicatorTintColor = [UIColor blackColor];
+    pageControl.backgroundColor = [UIColor whiteColor];
+    
         
     // Search bar
     UIImage *searchBackground = [[UIImage imageNamed:@"searchbar-background.png"]

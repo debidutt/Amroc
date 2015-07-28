@@ -35,4 +35,9 @@
 - (void)suggestionsForQuery:(NSString *)query completionBlock:(NSArrayBlock)completionBlock;
 
 
+-(void)getDataForBanner:(NSString * )query completionBlock:(NSArrayBlock)completionBlock;
+
+- (void)searchForAutoComplete:(NSString *)query completionBlock:(NSArrayBlock)completionBlock;
+
+
 @end

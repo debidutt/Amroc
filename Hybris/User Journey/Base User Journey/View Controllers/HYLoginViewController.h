@@ -10,18 +10,20 @@
 // Information and shall use it only in accordance with the terms of the
 // license agreement you entered into with hybris.
 //
-
+#import "HYLoginViewController.h"
 #import "HYViewController.h"
 #import "ModalViewControllerDelegate.h"
 
 @class HYTextField;
 
 @interface HYLoginViewController:HYViewController<UIScrollViewDelegate, UITextViewDelegate, UITextFieldDelegate>
+@property (weak, nonatomic) IBOutlet HYTextField *emailAddressField;
+@property (weak, nonatomic) IBOutlet HYTextField *passwordField;
 
 @property (weak) id<ModalViewControllerDelegate>delegate;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
-@property (weak, nonatomic) IBOutlet HYTextField *emailAddressField;
-@property (weak, nonatomic) IBOutlet HYTextField *passwordField;
+
+
 @property (weak, nonatomic) IBOutlet HYButton *forgottenPasswordButton;
 @property (weak, nonatomic) IBOutlet HYLabel *returningCustomerLabel;
 @property (weak, nonatomic) IBOutlet HYButton *createNewCustomerButton;

@@ -12,8 +12,7 @@
 //
 
 #import "HYLoginViewController.h"
-
-#import "HYRegisterUserViewController.h"
+#import "HYSignUpViewController.h"
 
 
 @interface HYLoginViewController ()
@@ -35,23 +34,32 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+      self.navigationController.navigationBarHidden = YES;
+    
+   
     self.title = NSLocalizedString(@"Sign in", @"Title for login view");
     self.returningCustomerLabel.text = NSLocalizedStringWithDefaultValue(@"Returning Customer", nil, [NSBundle mainBundle], @"Returning Customer", @"Returning Customer label");
     self.returningCustomerLabel.font = UIFont_titleFont;
     
-    self.emailAddressField.placeholder = NSLocalizedString(@"Email address", @"Placeholder for email login field");
+    self.emailAddressField.placeholder = NSLocalizedString(@"Email or Phone Number", @"Placeholder for email login field");
     self.passwordField.placeholder = NSLocalizedString(@"Password", @"Placeholder for password login field");
     
     [self.forgottenPasswordButton setTitle:NSLocalizedString(@"Forgotten your password?", @"Button text for forgotten password") forState:UIControlStateNormal];
     [self.loginButton setTitle:NSLocalizedString(@"Login", @"Login button") forState:UIControlStateNormal];
-    [self.createNewCustomerButton setTitle:NSLocalizedString(@"New customer", @"Button text for new customer") forState:UIControlStateNormal];
+    [self.createNewCustomerButton setTitle:NSLocalizedString(@"Sign Up", @"Button text for new customer") forState:UIControlStateNormal];
         
     self.navigationItem.rightBarButtonItem.title = NSLocalizedString(@"Cancel", @"Title for the cancel button.");
+   
+
+
+    
+    
 }
 
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    self.navigationController.navigationBarHidden = YES;
 
     if ([HYAppDelegate sharedDelegate].isLoggedIn) {
         self.emailAddressField.text = [HYAppDelegate sharedDelegate].username;
@@ -128,6 +136,10 @@
 
 
 - (IBAction)signIn:(id)sender {
+    
+    NSLog(@"Email Address %@ %@",self.emailAddressField.text,self.passwordField.text);
+    
+
     [[HYWebService shared] loginWithUsername:self.emailAddressField.text password:self.passwordField.text completionBlock:^(NSError *error) {
             if (error) {
                 [[HYAppDelegate sharedDelegate] setIsLoggedIn:NO];
@@ -142,23 +154,51 @@
                             @"web_services_language_preference"];
                         [[NSUserDefaults standardUserDefaults] setValue:[[profileDictionary objectForKey:@"currency"] objectForKey:@"isocode"] forKey:
                             @"web_services_currency_preference"];
+                    [[NSUserDefaults standardUserDefaults] setValue:[profileDictionary objectForKey:@"firstName"] forKey:@"UserProfileName"];
                         [[NSUserDefaults standardUserDefaults] synchronize];
 
                         [[HYAppDelegate sharedDelegate] setUsername:self.emailAddressField.text];
                         [[HYAppDelegate sharedDelegate] setIsLoggedIn:YES];
-                        [self performBlock:^{
-                                [self.delegate requestDismissAnimated:YES sender:self];
-                            } afterDelay:0.3];
-                    }];
+
+                    
+                    [self performBlock:^{
+                        [self.delegate requestDismissAnimated:YES sender:self];
+                        
+                            UIStoryboard *sb = [UIStoryboard storyboardWithName:@"iPhoneStoryboard" bundle:nil];
+                        
+                            UIViewController *vcc = [sb instantiateViewControllerWithIdentifier:@"landingPage"];
+                        [self.navigationController pushViewController:vcc animated:YES];
+                            
+                          //  [self presentViewController:vcc animated:YES completion:NULL];
+                       
+                                                } afterDelay:0.3];
+                   
+                    
+
+                    
+//                        [self performBlock:^{
+//                                [self.delegate requestDismissAnimated:YES sender:self];
+//                            } afterDelay:0.3];
+                    }
+                 ];
+                
+                
             }
         }];
 }
 
 
 - (IBAction)registerNewUser:(id)sender {
-    HYRegisterUserViewController *vc = [[HYRegisterUserViewController alloc] initWithTitle:NSLocalizedString(@"Register", @"Register view title")];
 
+
+    HYSignUpViewController *vc = [[HYSignUpViewController alloc] initWithTitle:@"SignUp" ];
+    
     [self.navigationController pushViewController:vc animated:YES];
+    
+    
+//    HYRegisterUserViewController *vc = [[HYRegisterUserViewController alloc] initWithTitle:NSLocalizedString(@"Register", @"Register view title")];
+//
+//    [self.navigationController pushViewController:vc animated:YES];
 }
 
 

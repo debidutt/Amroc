@@ -26,7 +26,7 @@
     //[userDefaults setValue:@"https://earlybird.hybris.com:9002" forKey:@"web_services_base_url_preference"];
     [userDefaults setValue:@"en" forKey:@"web_services_language_preference"];
     [userDefaults setValue:@"USD" forKey:@"web_services_currency_preference"];
-    [userDefaults setValue:@"electronics/" forKey:@"web_services_site_url_suffix_preference"];
+    [userDefaults setValue:@"croma_retail_shop/" forKey:@"web_services_site_url_suffix_preference"];     ///changed electronics/ to croma_retail_shop/ for local service.
     
     [userDefaults synchronize];
 }
