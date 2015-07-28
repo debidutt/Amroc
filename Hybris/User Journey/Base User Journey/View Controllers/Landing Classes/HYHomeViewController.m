@@ -217,7 +217,7 @@
     
     MFMailComposeViewController *mailComposer;
     
-    
+    //mail composer is used to send mail
    
     if ([MFMailComposeViewController canSendMail]){
     mailComposer  = [[MFMailComposeViewController alloc] init];
